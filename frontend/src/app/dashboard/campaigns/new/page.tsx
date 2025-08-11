@@ -3,584 +3,337 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { 
-  ArrowLeft, 
-  Video, 
-  ShoppingCart, 
-  Bot, 
-  Mic, 
-  Palette, 
+  ArrowLeft,
+  Save,
+  Video,
+  Sparkles,
   Target,
+  Users,
+  Calendar,
+  DollarSign,
   Play,
-  Plus,
-  Upload,
-  Sparkles
+  Camera,
+  Share2,
+  TrendingUp
 } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 
-interface Product {
-  id: string
-  name: string
-  price: number
-  image: string
-  description: string
-}
-
-interface CampaignForm {
-  name: string
-  productId: string
-  targetPlatforms: string[]
-  videoLength: string
-  avatarStyle: string
-  voiceStyle: string
-  scriptTone: string
-  hookStyle: string
-  callToAction: string
-}
-
-const avatarStyles = [
-  { id: 'friendly', name: 'Friendly & Approachable', description: 'Warm, trustworthy personality' },
-  { id: 'professional', name: 'Professional & Confident', description: 'Business-like, authoritative' },
-  { id: 'energetic', name: 'Energetic & Exciting', description: 'High-energy, enthusiastic' },
-  { id: 'casual', name: 'Casual & Relatable', description: 'Everyday, down-to-earth' }
+const campaignTypes = [
+  { value: 'ugc-video', label: 'UGC Video Campaign', icon: Video, description: 'Create authentic user-generated content videos', color: 'from-purple-500 to-pink-600' },
+  { value: 'ai-generated', label: 'AI-Generated Videos', icon: Sparkles, description: 'Use AI to create engaging video content', color: 'from-blue-500 to-purple-600' },
+  { value: 'user-submitted', label: 'User Submitted Content', icon: Users, description: 'Collect and curate videos from your community', color: 'from-green-500 to-emerald-600' },
+  { value: 'branded-content', label: 'Branded Content Series', icon: Target, description: 'Professional branded video campaigns', color: 'from-orange-500 to-red-600' }
 ]
 
-const voiceStyles = [
-  { id: 'female-warm', name: 'Female - Warm & Friendly', description: 'Gentle, approachable tone' },
-  { id: 'female-energetic', name: 'Female - Energetic', description: 'High-energy, exciting' },
-  { id: 'male-confident', name: 'Male - Confident', description: 'Strong, authoritative' },
-  { id: 'male-casual', name: 'Male - Casual', description: 'Relaxed, conversational' }
+const platformOptions = [
+  { value: 'tiktok', label: 'TikTok', icon: '🎵', description: 'Short-form vertical videos' },
+  { value: 'instagram', label: 'Instagram', icon: '📷', description: 'Reels and IGTV content' },
+  { value: 'youtube', label: 'YouTube', icon: '▶️', description: 'Long-form video content' },
+  { value: 'facebook', label: 'Facebook', icon: '📘', description: 'Social media video posts' },
+  { value: 'multi-platform', label: 'Multi-Platform', icon: '🌐', description: 'Cross-platform distribution' }
 ]
 
-const scriptTones = [
-  { id: 'problem-solution', name: 'Problem-Solution', description: 'Identify pain point, offer solution' },
-  { id: 'storytelling', name: 'Storytelling', description: 'Narrative approach with emotional hook' },
-  { id: 'benefit-focused', name: 'Benefit-Focused', description: 'Highlight key benefits and features' },
-  { id: 'social-proof', name: 'Social Proof', description: 'Customer testimonials and results' }
-]
-
-const hookStyles = [
-  { id: 'question', name: 'Question Hook', description: 'Start with engaging question' },
-  { id: 'statistic', name: 'Statistic Hook', description: 'Lead with surprising number' },
-  { id: 'story', name: 'Story Hook', description: 'Begin with relatable scenario' },
-  { id: 'controversy', name: 'Controversy Hook', description: 'Challenge common belief' }
-]
-
-// Mock products data
-const mockProducts: Product[] = [
-  {
-    id: '1',
-    name: 'Premium Wireless Headphones',
-    price: 199.99,
-    image: '/api/placeholder/100/100',
-    description: 'High-quality wireless headphones with noise cancellation'
-  },
-  {
-    id: '2',
-    name: 'Smart Fitness Watch',
-    price: 299.99,
-    image: '/api/placeholder/100/100',
-    description: 'Advanced fitness tracking with health monitoring'
-  }
+const videoFormats = [
+  { value: 'short-form', label: 'Short Form (15-60s)', description: 'Perfect for TikTok, Instagram Reels' },
+  { value: 'medium-form', label: 'Medium Form (1-3 min)', description: 'Great for Instagram, Facebook' },
+  { value: 'long-form', label: 'Long Form (3+ min)', description: 'Ideal for YouTube, detailed content' }
 ]
 
 export default function NewCampaignPage() {
-  const router = useRouter()
-  const [formData, setFormData] = useState<CampaignForm>({
+  const [formData, setFormData] = useState({
     name: '',
-    productId: '',
-    targetPlatforms: [],
-    videoLength: '30',
-    avatarStyle: 'friendly',
-    voiceStyle: 'female-warm',
-    scriptTone: 'problem-solution',
-    hookStyle: 'question',
-    callToAction: 'Shop Now'
+    type: '',
+    description: '',
+    platforms: [] as string[],
+    videoFormat: '',
+    targetAudience: '',
+    videoCount: '',
+    budget: '',
+    startDate: '',
+    endDate: '',
+    hashtags: '',
+    callToAction: ''
   })
-  const [isLoading, setIsLoading] = useState(false)
-  const [currentStep, setCurrentStep] = useState(1)
-  const [previewData, setPreviewData] = useState<any>(null)
 
-  const handleInputChange = (field: keyof CampaignForm, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    // Handle form submission
+    console.log('UGC Campaign data:', formData)
   }
 
   const handlePlatformToggle = (platform: string) => {
     setFormData(prev => ({
       ...prev,
-      targetPlatforms: prev.targetPlatforms.includes(platform)
-        ? prev.targetPlatforms.filter(p => p !== platform)
-        : [...prev.targetPlatforms, platform]
+      platforms: prev.platforms.includes(platform)
+        ? prev.platforms.filter(p => p !== platform)
+        : [...prev.platforms, platform]
     }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-
-    try {
-      const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:5001/api/ugc/campaigns', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        router.push(`/dashboard/campaigns/${data.campaign.id}`)
-      } else {
-        console.error('Failed to create campaign')
-      }
-    } catch (error) {
-      console.error('Error creating campaign:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const generatePreview = async () => {
-    setIsLoading(true)
-    try {
-      // Simulate AI generation
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      setPreviewData({
-        script: `Hey there! Are you tired of [problem]? I was too, until I discovered this amazing [product] that completely changed my [area of life]. 
-
-The best part? It's so easy to use and the results are incredible! I can't believe I waited so long to try it.
-
-If you're ready to [benefit], click the link below and start your transformation today!`,
-        estimatedDuration: '28 seconds',
-        hook: 'Question-based hook to engage viewers',
-        cta: formData.callToAction
-      })
-    } catch (error) {
-      console.error('Error generating preview:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const steps = [
-    { number: 1, title: 'Campaign Details', description: 'Basic campaign information' },
-    { number: 2, title: 'AI Configuration', description: 'Avatar, voice, and script settings' },
-    { number: 3, title: 'Preview & Generate', description: 'Review and create your campaign' }
-  ]
-
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Link
             href="/dashboard/campaigns"
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+            className="inline-flex items-center px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to UGC Campaigns
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Create New Campaign</h1>
-            <p className="text-gray-600 mt-1">Generate AI-powered UGC videos for your products</p>
+            <h1 className="text-3xl font-bold text-gray-900">Create New UGC Campaign</h1>
+            <p className="text-gray-600 mt-1">Set up your User Generated Content video campaign and start creating authentic content</p>
           </div>
         </div>
       </div>
 
-      {/* Progress Steps */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          {steps.map((step, index) => (
-            <div key={step.number} className="flex items-center">
-              <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
-                currentStep >= step.number 
-                  ? 'bg-blue-600 border-blue-600 text-white' 
-                  : 'border-gray-300 text-gray-500'
-              }`}>
-                {currentStep > step.number ? (
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                ) : (
-                  step.number
-                )}
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-900">{step.title}</p>
-                <p className="text-xs text-gray-500">{step.description}</p>
-              </div>
-              {index < steps.length - 1 && (
-                <div className={`w-16 h-0.5 mx-4 ${
-                  currentStep > step.number ? 'bg-blue-600' : 'bg-gray-300'
-                }`} />
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Campaign Form */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+      >
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Campaign Name */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Campaign Name *
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="e.g., Summer Collection UGC Challenge"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+            />
+          </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Step 1: Campaign Details */}
-        {currentStep === 1 && (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
-          >
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Campaign Details</h2>
-            
-            <div className="space-y-6">
-              {/* Campaign Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Campaign Name
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., Summer Sale Campaign"
-                  required
-                />
-              </div>
-
-              {/* Product Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Product
-                </label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {mockProducts.map((product) => (
-                    <div
-                      key={product.id}
-                      className={`p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
-                        formData.productId === product.id
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => handleInputChange('productId', product.id)}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
-                          <ShoppingCart className="w-6 h-6 text-gray-500" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{product.name}</p>
-                          <p className="text-sm text-gray-500">${product.price}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Target Platforms */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Target Platforms
-                </label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {['TikTok', 'Instagram', 'Facebook', 'YouTube'].map((platform) => (
-                    <button
-                      key={platform}
-                      type="button"
-                      onClick={() => handlePlatformToggle(platform)}
-                      className={`p-3 border-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                        formData.targetPlatforms.includes(platform)
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-gray-200 text-gray-700 hover:border-gray-300'
-                      }`}
-                    >
-                      {platform}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Video Length */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Video Length
-                </label>
-                <select
-                  value={formData.videoLength}
-                  onChange={(e) => handleInputChange('videoLength', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          {/* Campaign Type Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Campaign Type *
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {campaignTypes.map((type) => (
+                <label
+                  key={type.value}
+                  className={`relative flex items-start p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
+                    formData.type === type.value
+                      ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
                 >
-                  <option value="15">15 seconds</option>
-                  <option value="30">30 seconds</option>
-                  <option value="60">60 seconds</option>
-                </select>
-              </div>
+                  <input
+                    type="radio"
+                    name="type"
+                    value={type.value}
+                    checked={formData.type === type.value}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    className="sr-only"
+                  />
+                  <div className="flex items-start space-x-3">
+                    <div className={`w-12 h-12 bg-gradient-to-r ${type.color} rounded-lg flex items-center justify-center`}>
+                      <type.icon className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{type.label}</p>
+                      <p className="text-sm text-gray-600">{type.description}</p>
+                    </div>
+                  </div>
+                </label>
+              ))}
             </div>
-          </motion.div>
-        )}
+          </div>
 
-        {/* Step 2: AI Configuration */}
-        {currentStep === 2 && (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
-          >
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">AI Configuration</h2>
-            
-            <div className="space-y-6">
-              {/* Avatar Style */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  AI Avatar Style
-                </label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {avatarStyles.map((style) => (
-                    <div
-                      key={style.id}
-                      className={`p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
-                        formData.avatarStyle === style.id
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => handleInputChange('avatarStyle', style.id)}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                          <Bot className="w-5 h-5 text-blue-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{style.name}</p>
-                          <p className="text-sm text-gray-500">{style.description}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Campaign Description
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Describe your campaign goals, target audience, and the type of content you want to create..."
+              rows={4}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+            />
+          </div>
 
-              {/* Voice Style */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Voice Style
-                </label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {voiceStyles.map((style) => (
-                    <div
-                      key={style.id}
-                      className={`p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
-                        formData.voiceStyle === style.id
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-blue-500 text-blue-700'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => handleInputChange('voiceStyle', style.id)}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                          <Mic className="w-5 h-5 text-purple-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{style.name}</p>
-                          <p className="text-sm text-gray-500">{style.description}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Script Tone */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Script Tone
-                </label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {scriptTones.map((tone) => (
-                    <div
-                      key={tone.id}
-                      className={`p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
-                        formData.scriptTone === tone.id
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => handleInputChange('scriptTone', tone.id)}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                          <Palette className="w-5 h-5 text-green-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{tone.name}</p>
-                          <p className="text-sm text-gray-500">{tone.description}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Hook Style */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Hook Style
-                </label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {hookStyles.map((hook) => (
-                    <div
-                      key={hook.id}
-                      className={`p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
-                        formData.hookStyle === hook.id
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => handleInputChange('hookStyle', hook.id)}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                          <Target className="w-5 h-5 text-orange-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{hook.name}</p>
-                          <p className="text-sm text-gray-500">{hook.description}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Call to Action */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Call to Action
-                </label>
-                <input
-                  type="text"
-                  value={formData.callToAction}
-                  onChange={(e) => handleInputChange('callToAction', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., Shop Now, Learn More, Get Started"
-                />
-              </div>
+          {/* Platform Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Target Platforms *
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {platformOptions.map((platform) => (
+                <button
+                  key={platform.value}
+                  type="button"
+                  onClick={() => handlePlatformToggle(platform.value)}
+                  className={`p-3 border-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    formData.platforms.includes(platform.value)
+                      ? 'border-purple-500 bg-purple-50 text-purple-700'
+                      : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <span className="text-lg">{platform.icon}</span>
+                    <span>{platform.label}</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">{platform.description}</p>
+                </button>
+              ))}
             </div>
-          </motion.div>
-        )}
+          </div>
 
-        {/* Step 3: Preview & Generate */}
-        {currentStep === 3 && (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
-          >
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Preview & Generate</h2>
-            
-            <div className="space-y-6">
-              {/* Campaign Summary */}
-              <div className="bg-gray-50 p-4 rounded-xl">
-                <h3 className="font-medium text-gray-900 mb-3">Campaign Summary</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-gray-500">Name</p>
-                    <p className="font-medium">{formData.name}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500">Video Length</p>
-                    <p className="font-medium">{formData.videoLength} seconds</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500">Platforms</p>
-                    <p className="font-medium">{formData.targetPlatforms.join(', ')}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500">Avatar Style</p>
-                    <p className="font-medium">{avatarStyles.find(s => s.id === formData.avatarStyle)?.name}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* AI Preview */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-medium text-gray-900">AI-Generated Script Preview</h3>
-                  <button
-                    type="button"
-                    onClick={generatePreview}
-                    disabled={isLoading}
-                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors duration-200"
-                  >
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    {isLoading ? 'Generating...' : 'Generate Preview'}
-                  </button>
-                </div>
-
-                {previewData ? (
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-sm font-medium text-blue-900">Generated Script:</p>
-                        <p className="text-sm text-blue-800 whitespace-pre-line">{previewData.script}</p>
-                      </div>
-                      <div className="flex items-center space-x-4 text-sm text-blue-700">
-                        <span>Duration: {previewData.estimatedDuration}</span>
-                        <span>Hook: {previewData.hook}</span>
-                        <span>CTA: {previewData.cta}</span>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
-                    <Video className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-500">Click "Generate Preview" to see your AI-generated script</p>
-                  </div>
-                )}
-              </div>
+          {/* Video Format & Count */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Play className="w-4 h-4 inline mr-2" />
+                Video Format
+              </label>
+              <select
+                value={formData.videoFormat}
+                onChange={(e) => setFormData({ ...formData, videoFormat: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              >
+                <option value="">Select video format</option>
+                {videoFormats.map((format) => (
+                  <option key={format.value} value={format.value}>
+                    {format.label} - {format.description}
+                  </option>
+                ))}
+              </select>
             </div>
-          </motion.div>
-        )}
 
-        {/* Navigation Buttons */}
-        <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
-            disabled={currentStep === 1}
-            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-          >
-            Previous
-          </button>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Video className="w-4 h-4 inline mr-2" />
+                Number of Videos
+              </label>
+              <input
+                type="number"
+                value={formData.videoCount}
+                onChange={(e) => setFormData({ ...formData, videoCount: e.target.value })}
+                placeholder="e.g., 10"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+          </div>
 
-          {currentStep < 3 ? (
-            <button
-              type="button"
-              onClick={() => setCurrentStep(currentStep + 1)}
-              className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors duration-200"
+          {/* Target Audience & Budget */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Target className="w-4 h-4 inline mr-2" />
+                Target Audience
+              </label>
+              <input
+                type="text"
+                value={formData.targetAudience}
+                onChange={(e) => setFormData({ ...formData, targetAudience: e.target.value })}
+                placeholder="e.g., Fashion enthusiasts, 18-35 years old"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <DollarSign className="w-4 h-4 inline mr-2" />
+                Campaign Budget
+              </label>
+              <input
+                type="number"
+                value={formData.budget}
+                onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+                placeholder="e.g., 5000"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+          </div>
+
+          {/* Campaign Dates */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Calendar className="w-4 h-4 inline mr-2" />
+                Start Date
+              </label>
+              <input
+                type="date"
+                value={formData.startDate}
+                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Calendar className="w-4 h-4 inline mr-2" />
+                End Date
+              </label>
+              <input
+                type="date"
+                value={formData.endDate}
+                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+          </div>
+
+          {/* Hashtags & CTA */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <TrendingUp className="w-4 h-4 inline mr-2" />
+                Campaign Hashtags
+              </label>
+              <input
+                type="text"
+                value={formData.hashtags}
+                onChange={(e) => setFormData({ ...formData, hashtags: e.target.value })}
+                placeholder="e.g., #SummerStyle #UGCCampaign #FashionForward"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Share2 className="w-4 h-4 inline mr-2" />
+                Call to Action
+              </label>
+              <input
+                type="text"
+                value={formData.callToAction}
+                onChange={(e) => setFormData({ ...formData, callToAction: e.target.value })}
+                placeholder="e.g., Share your video with #SummerStyle"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+          </div>
+
+          {/* Form Actions */}
+          <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+            <Link
+              href="/dashboard/campaigns"
+              className="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium"
             >
-              Next
-            </button>
-          ) : (
+              Cancel
+            </Link>
             <button
               type="submit"
-              disabled={isLoading || !previewData}
-              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold"
             >
-              {isLoading ? (
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Creating Campaign...</span>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-2">
-                  <Play className="w-4 h-4" />
-                  <span>Create Campaign</span>
-                </div>
-              )}
+              <Save className="w-4 h-4 mr-2" />
+              Create UGC Campaign
             </button>
-          )}
-        </div>
-      </form>
+          </div>
+        </form>
+      </motion.div>
     </div>
   )
 }
