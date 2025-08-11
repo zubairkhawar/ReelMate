@@ -102,6 +102,12 @@ export default function DashboardLayout({
           </button>
         </div>
 
+        {/* Logo */}
+        <div className="flex items-center space-x-3 px-6 py-4 border-b border-gray-200">
+          <img src="/logo.png" alt="ReelMate Logo" className="w-8 h-8" />
+          <span className="text-xl font-bold text-gray-900">ReelMate</span>
+        </div>
+
         {/* User Profile */}
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex items-center space-x-3">
