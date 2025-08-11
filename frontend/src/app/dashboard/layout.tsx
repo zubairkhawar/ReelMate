@@ -92,7 +92,6 @@ export default function DashboardLayout({
         <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg"></div>
-            <span className="text-xl font-bold text-gray-900">ReelMate</span>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}
@@ -103,9 +102,8 @@ export default function DashboardLayout({
         </div>
 
         {/* Logo */}
-        <div className="flex items-center space-x-3 px-6 py-4 border-b border-gray-200">
-          <img src="/logo.png" alt="ReelMate Logo" className="w-8 h-8" />
-          <span className="text-xl font-bold text-gray-900">ReelMate</span>
+        <div className="flex items-center px-6 py-4">
+          <img src="/logo.png" alt="ReelMate Logo" className="w-30 h-12" />
         </div>
 
         {/* User Profile */}

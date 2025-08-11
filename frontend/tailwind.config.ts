@@ -56,6 +56,9 @@ const config: Config = {
           '100%': { transform: 'scale(1)', opacity: '1' },
         },
       },
+      spacing: {
+        '30': '7.5rem', // 120px
+      },
     },
   },
   plugins: [],

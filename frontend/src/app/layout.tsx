@@ -8,11 +8,16 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "ReelMate - AI-Powered UGC Video Generation Platform",
+  title: "ReelMate",
   description: "Scale your AI UGC agency with unlimited high-converting ads. Generate, test, and deploy content that converts.",
   keywords: ["AI", "UGC", "video generation", "ecommerce", "shopify", "social media", "advertising"],
   authors: [{ name: "ReelMate Team" }],
   viewport: "width=device-width, initial-scale=1",
+  icons: {
+    icon: "/svg.png",
+    shortcut: "/svg.png",
+    apple: "/svg.png",
+  },
 };
 
 export default function RootLayout({

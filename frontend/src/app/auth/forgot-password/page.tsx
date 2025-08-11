@@ -83,40 +83,40 @@ export default function ForgotPasswordPage() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-16">
         <div className="w-full max-w-md">
           {/* Branding/Logo */}
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center space-x-3 mb-6">
-              <img src="/logo.png" alt="ReelMate Logo" className="w-10 h-10" />
-              <span className="text-3xl font-bold text-gray-900">ReelMate</span>
-            </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-3">Forgot Password?</h1>
-            <p className="text-lg text-gray-600">No worries! Enter your email and we'll send you reset instructions.</p>
+          <div className="flex flex-col items-center justify-center mb-6">
+            <img src="/svg.png" alt="ReelMate Logo" className="w-16 h-16 mb-3" />
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              ReelMate
+            </h1>
           </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Forgot Password?</h2>
+          <p className="text-base text-gray-600 mb-4 text-center">No worries! Enter your email and we'll send you reset instructions.</p>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Email Address
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                   errors.email ? 'border-red-300' : 'border-gray-300'
                 }`}
                 placeholder="john@example.com"
               />
-              {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
             </div>
 
             {/* General Error */}
             {errors.general && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                 <div className="flex items-center space-x-2">
-                  <AlertCircle className="w-5 h-5 text-red-600" />
-                  <p className="text-red-600 text-sm">{errors.general}</p>
+                  <AlertCircle className="w-4 h-4 text-red-600" />
+                  <p className="text-red-600 text-xs">{errors.general}</p>
                 </div>
               </div>
             )}
@@ -125,15 +125,18 @@ export default function ForgotPasswordPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gray-900 text-white py-4 px-6 rounded-xl font-semibold hover:bg-gray-800 transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full bg-gray-900 text-white py-3 px-6 rounded-lg font-semibold hover:bg-gray-800 transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center space-x-2">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Sending...</span>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Sending Reset Link...</span>
                 </div>
               ) : (
-                'Send Reset Link'
+                <div className="flex items-center justify-center space-x-2">
+                  <span>Send Reset Link</span>
+                  <ArrowLeft className="w-4 h-4" />
+                </div>
               )}
             </button>
           </form>
