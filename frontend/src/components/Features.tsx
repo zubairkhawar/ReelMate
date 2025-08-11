@@ -32,25 +32,25 @@ const features = [
 
 export default function Features() {
   return (
-    <section className="py-20 bg-white">
+    <section className="py-16 lg:py-20 bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-12 lg:mb-16"
         >
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Everything You Need to Scale
+          <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+            Tools to Scale Fast
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto">
             From AI-powered content creation to automated publishing and optimization, 
-            ReelMate gives you the tools to dominate social media advertising.
+            ReelMate gives you everything to dominate social media advertising.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           {features.map((feature, index) => (
             <motion.div
               key={feature.title}
@@ -60,16 +60,16 @@ export default function Features() {
               viewport={{ once: true }}
               className="group"
             >
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100">
-                <div className={`w-16 h-16 bg-gradient-to-r ${feature.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                  <feature.icon className="w-8 h-8 text-white" />
+              <div className="bg-white rounded-2xl p-8 lg:p-10 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-3 border border-gray-100 hover:border-blue-200">
+                <div className="w-14 h-14 lg:w-16 lg:h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg group-hover:shadow-blue-500/25">
+                  <feature.icon className="w-7 h-7 lg:w-8 lg:h-8 text-white" strokeWidth={1.5} />
                 </div>
                 
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                <h3 className="text-lg lg:text-xl font-semibold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors duration-300">
                   {feature.title}
                 </h3>
                 
-                <p className="text-gray-600 leading-relaxed">
+                <p className="text-gray-600 leading-relaxed text-sm lg:text-base group-hover:text-gray-700 transition-colors duration-300">
                   {feature.description}
                 </p>
               </div>

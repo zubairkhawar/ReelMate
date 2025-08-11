@@ -8,20 +8,20 @@ export default function DemoVideo() {
   const [isMuted, setIsMuted] = useState(true)
 
   return (
-    <section className="py-20 bg-gradient-to-br from-gray-50 to-white">
+    <section className="py-16 lg:py-20 bg-gradient-to-br from-gray-50 to-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-12 lg:mb-16"
         >
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
             See ReelMate in Action
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Watch how our AI generates high-converting UGC videos in seconds. 
+          <p className="text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto">
+            Watch how our AI generates high-converting User Generated Content videos in seconds. 
             No actors, no filming, no editing required.
           </p>
         </motion.div>
@@ -35,13 +35,29 @@ export default function DemoVideo() {
         >
           {/* Video Container */}
           <div className="relative bg-white rounded-3xl shadow-2xl overflow-hidden">
-            {/* Video Placeholder */}
-            <div className="relative bg-gradient-to-br from-blue-900 to-purple-900 h-96 flex items-center justify-center">
-              <div className="text-center text-white">
-                <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Play className="w-12 h-12 text-white ml-1" />
+            {/* Video Placeholder with Looping Thumbnail */}
+            <div className="relative bg-gradient-to-br from-blue-900 to-purple-900 h-80 lg:h-96 flex items-center justify-center overflow-hidden">
+              {/* Looping Thumbnail Background */}
+              <div className="absolute inset-0 opacity-20">
+                <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-400 animate-pulse"></div>
+              </div>
+              
+              {/* Video Preview Elements */}
+              <div className="relative z-10 text-center text-white">
+                {/* Prominent Play Button with Pulse Animation */}
+                <div className="relative mb-6">
+                  <div className="w-20 h-20 lg:w-24 lg:h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto animate-pulse">
+                    <div className="w-16 h-16 lg:w-20 lg:h-20 bg-white rounded-full flex items-center justify-center shadow-2xl hover:shadow-white/30 transition-all duration-300 hover:scale-110">
+                      <Play className="w-8 h-10 lg:w-10 lg:h-12 text-blue-900 ml-1" />
+                    </div>
+                  </div>
+                  {/* Outer Pulse Ring */}
+                  <div className="absolute inset-0 w-20 h-20 lg:w-24 lg:h-24 border-2 border-white/30 rounded-full animate-ping"></div>
+                  {/* Additional Animated Ring */}
+                  <div className="absolute inset-0 w-20 h-20 lg:w-24 lg:h-24 border border-white/20 rounded-full animate-pulse"></div>
                 </div>
-                <h3 className="text-2xl font-semibold mb-2">AI-Generated UGC Video</h3>
+                
+                <h3 className="text-xl lg:text-2xl font-semibold mb-2">AI-Generated UGC Video</h3>
                 <p className="text-blue-100">Click to watch demo</p>
               </div>
               
@@ -61,16 +77,16 @@ export default function DemoVideo() {
             </div>
 
             {/* Video Info */}
-            <div className="p-8">
+            <div className="p-6 lg:p-8">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold text-gray-900">
+                <h3 className="text-lg lg:text-xl font-semibold text-gray-900">
                   "This Product Changed My Life" - UGC Style
                 </h3>
                 <span className="text-sm text-gray-500">15 seconds</span>
               </div>
               
               <div className="space-y-3">
-                <div className="flex items-center space-x-4 text-sm text-gray-600">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0 text-sm text-gray-600">
                   <span>🎭 AI Avatar: Sarah (Friendly)</span>
                   <span>🎵 Voice: Enthusiastic</span>
                   <span>🎬 Style: Problem-Solution</span>
@@ -102,9 +118,9 @@ export default function DemoVideo() {
                 viewport={{ once: true }}
                 className="text-center"
               >
-                <div className="text-4xl mb-2">{stat.icon}</div>
-                <div className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
-                <div className="text-gray-600">{stat.label}</div>
+                <div className="text-3xl lg:text-4xl mb-2">{stat.icon}</div>
+                <div className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
+                <div className="text-gray-600 text-sm lg:text-base">{stat.label}</div>
               </motion.div>
             ))}
           </div>

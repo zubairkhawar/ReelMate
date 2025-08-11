@@ -1,7 +1,8 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Github, Twitter, Linkedin, Mail } from 'lucide-react'
+import { Github, Twitter, Linkedin, Mail, ArrowUp } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
 const footerLinks = {
   product: [
@@ -38,17 +39,32 @@ const socialLinks = [
 ]
 
 export default function Footer() {
+  const [showBackToTop, setShowBackToTop] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 400)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   return (
-    <footer className="bg-gray-900 text-white">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
+    <footer className="bg-gray-900 text-white relative">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
           {/* Brand Section */}
           <div className="col-span-2 lg:col-span-1">
             <div className="flex items-center space-x-3 mb-4">
               <img src="/logo.png" alt="ReelMate Logo" className="w-30 h-12" />
             </div>
-            <p className="text-gray-400 mb-6 max-w-md">
-              Scale your AI UGC agency with unlimited high-converting ads. 
+            <p className="text-gray-300 mb-6 max-w-md">
+              Scale your AI User Generated Content agency with unlimited high-converting ads. 
               Generate, test, and deploy content that converts.
             </p>
             
@@ -81,7 +97,7 @@ export default function Footer() {
                 <li key={link.name}>
                   <a
                     href={link.href}
-                    className="text-gray-400 hover:text-white transition-colors duration-200"
+                    className="text-gray-200 hover:text-white transition-colors duration-200"
                   >
                     {link.name}
                   </a>
@@ -103,7 +119,7 @@ export default function Footer() {
                 <li key={link.name}>
                   <a
                     href={link.href}
-                    className="text-gray-400 hover:text-white transition-colors duration-200"
+                    className="text-gray-200 hover:text-white transition-colors duration-200"
                   >
                     {link.name}
                   </a>
@@ -125,7 +141,7 @@ export default function Footer() {
                 <li key={link.name}>
                   <a
                     href={link.href}
-                    className="text-gray-400 hover:text-white transition-colors duration-200"
+                    className="text-gray-200 hover:text-white transition-colors duration-200"
                   >
                     {link.name}
                   </a>
@@ -147,7 +163,7 @@ export default function Footer() {
                 <li key={link.name}>
                   <a
                     href={link.href}
-                    className="text-gray-400 hover:text-white transition-colors duration-200"
+                    className="text-gray-200 hover:text-white transition-colors duration-200"
                   >
                     {link.name}
                   </a>
@@ -163,18 +179,33 @@ export default function Footer() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
           viewport={{ once: true }}
-          className="border-t border-gray-800 mt-12 pt-8"
+          className="border-t border-gray-800 mt-8 pt-6"
         >
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm mb-4 md:mb-0">
+            <p className="text-gray-300 text-sm mb-4 md:mb-0">
               © 2024 ReelMate. All rights reserved.
             </p>
-            <div className="flex items-center space-x-6 text-sm text-gray-400">
+            <div className="flex items-center space-x-6 text-sm text-gray-300">
               <span>Made with ❤️ for creators</span>
             </div>
           </div>
         </motion.div>
       </div>
+
+      {/* Back to Top Button */}
+      <motion.button
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ 
+          opacity: showBackToTop ? 1 : 0, 
+          scale: showBackToTop ? 1 : 0 
+        }}
+        transition={{ duration: 0.3 }}
+        onClick={scrollToTop}
+        className="fixed bottom-8 right-8 w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200 z-50 flex items-center justify-center"
+        aria-label="Back to top"
+      >
+        <ArrowUp className="w-6 h-6" />
+      </motion.button>
     </footer>
   )
 }

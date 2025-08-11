@@ -30,27 +30,27 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section className="py-20 bg-white">
+    <section className="py-16 lg:py-20 bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-12 lg:mb-16"
         >
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
             How It Works
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Get your first AI-generated UGC video in under 5 minutes. 
+          <p className="text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto">
+            Get your first AI-generated User Generated Content video in under 5 minutes. 
             It's that simple.
           </p>
         </motion.div>
 
         <div className="relative">
           {/* Connection Lines */}
-          <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-200 via-purple-200 to-green-200 transform -translate-y-1/2 z-0" />
+          <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-200 via-purple-200 to-green-200 transform -translate-y-1/2 z-0 opacity-60" />
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
             {steps.map((step, index) => (
@@ -64,7 +64,7 @@ export default function HowItWorks() {
               >
                 <div className="text-center">
                   {/* Step Number */}
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-white border-4 border-gray-200 rounded-full text-2xl font-bold text-gray-400 mb-6">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full text-2xl font-bold text-white mb-6 shadow-lg">
                     {step.step}
                   </div>
                   
@@ -93,14 +93,14 @@ export default function HowItWorks() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
           viewport={{ once: true }}
-          className="text-center mt-16"
+          className="text-center mt-12 lg:mt-16"
         >
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-3xl p-8 max-w-2xl mx-auto">
-            <h3 className="text-2xl font-semibold text-gray-900 mb-4">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-3xl p-6 lg:p-8 max-w-2xl mx-auto">
+            <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-4">
               Ready to Get Started?
             </h3>
             <p className="text-gray-600 mb-6">
-              Join thousands of brands already scaling with AI-generated UGC content.
+              Join thousands of brands already scaling with AI-generated User Generated Content.
             </p>
             <Link href="/auth/signup" className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
               Start Your Free Trial
