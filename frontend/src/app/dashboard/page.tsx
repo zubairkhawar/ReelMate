@@ -20,7 +20,12 @@ import {
   Sparkles,
   Clock,
   ThumbsUp,
-  Share2
+  Share2,
+  Search,
+  Copy,
+  Download,
+  Pause,
+  Trash2
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -255,105 +260,292 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Primary Metric Card - Total Videos */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="md:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total UGC Videos</p>
-              <p className="text-3xl font-bold text-gray-900">{formatNumber(stats.totalVideos)}</p>
-            </div>
-            <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
-              <Video className="w-8 h-8 text-white" />
-            </div>
-          </div>
-          
-          {/* Inline Sparkline */}
-          <div className="mb-4">
-            {renderSparkline(performanceData.views)}
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center text-sm text-green-600">
-              <TrendingUp className="w-4 h-4 mr-1" />
-              +18.2%
-            </div>
-            <span className="text-xs text-gray-500">Last 7 days</span>
-          </div>
-        </motion.div>
-
-        {/* Secondary Metric Cards */}
-        {[
-          { label: 'Total Views', value: stats.totalViews, icon: Eye, color: 'from-blue-500 to-blue-600', trend: '+12.5%' },
-          { label: 'Engagement Rate', value: `${((stats.totalEngagement / stats.totalViews) * 100).toFixed(1)}%`, icon: ThumbsUp, color: 'from-green-500 to-green-600', trend: '+8.2%' },
-          { label: 'Avg Watch Time', value: `${stats.averageWatchTime}s`, icon: Clock, color: 'from-orange-500 to-orange-600', trend: '+5.3%' }
-        ].map((metric, index) => (
-          <motion.div
-            key={metric.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 + index * 0.1 }}
-            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 transform hover:-translate-y-1"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">{metric.label}</p>
-                <p className="text-2xl font-bold text-gray-900">{metric.value}</p>
-              </div>
-              <div className={`w-12 h-12 bg-gradient-to-r ${metric.color} rounded-xl flex items-center justify-center shadow-lg`}>
-                <metric.icon className="w-6 h-6 text-white" />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center text-sm text-green-600">
-              <TrendingUp className="w-4 h-4 mr-1" />
-              {metric.trend}
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* UGC Video Performance */}
+      {/* Time Range & Comparison Controls */}
       <div className="bg-white rounded-xl border border-gray-100 p-6 mb-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">UGC Video Performance</h3>
-          <div className="flex items-center space-x-2 text-sm text-gray-500">
-            <span>Last 7 days</span>
+          <div className="flex items-center space-x-4">
+            <h3 className="text-lg font-semibold text-gray-900">Performance Overview</h3>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-500">vs</span>
+              <button className="px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors duration-200">
+                Previous Period
+              </button>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <select className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <option value="today">Today</option>
+              <option value="7d" selected>Last 7 days</option>
+              <option value="30d">Last 30 days</option>
+              <option value="custom">Custom</option>
+            </select>
           </div>
         </div>
-        
-        {/* Performance Tabs */}
-        <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
-          {['Views', 'Engagement', 'Watch Time', 'Shares'].map((tab) => (
-            <button
-              key={tab}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
-                tab === 'Views'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-        
-        {/* Chart Visualization */}
-        <div className="bg-gray-50 rounded-lg p-8 text-center">
-          <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600 text-sm">Chart visualization for {performanceData.views} data</p>
-          <p className="text-gray-500 text-xs mt-1">Last 7 days</p>
+
+        {/* Enhanced KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Total UGC Videos */}
+          <div className="group relative bg-white rounded-xl border border-gray-100 p-6 hover:shadow-lg transition-all duration-200 cursor-pointer">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total UGC Videos</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalVideos}</p>
+                <div className="flex items-center mt-2">
+                  <span className="text-sm text-green-600 font-medium">+18.2%</span>
+                  <svg className="w-4 h-4 text-green-600 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+              <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
+                <Video className="w-6 h-6 text-white" />
+              </div>
+            </div>
+            
+            {/* Sparkline */}
+            <div className="h-12 mb-3">
+              <svg className="w-full h-full" viewBox="0 0 100 40">
+                <polyline
+                  fill="none"
+                  stroke="url(#purple-gradient)"
+                  strokeWidth="2"
+                  points="0,35 20,25 40,30 60,15 80,20 100,10"
+                />
+                <defs>
+                  <linearGradient id="purple-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#8B5CF6" />
+                    <stop offset="100%" stopColor="#EC4899" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            
+            {/* Micro Legend */}
+            <div className="flex items-center justify-between text-xs text-gray-500">
+              <span>TikTok: 45%</span>
+              <span>IG: 35%</span>
+              <span>FB: 20%</span>
+            </div>
+            
+            {/* Hover Quick Action */}
+            <div className="absolute inset-0 bg-blue-50 bg-opacity-90 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <button className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                View Campaign Breakdown
+              </button>
+            </div>
+          </div>
+
+          {/* Total Views */}
+          <div className="group relative bg-white rounded-xl border border-gray-100 p-6 hover:shadow-lg transition-all duration-200 cursor-pointer">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Views</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalViews.toLocaleString()}</p>
+                <div className="flex items-center mt-2">
+                  <span className="text-sm text-green-600 font-medium">+12.5%</span>
+                  <svg className="w-4 h-4 text-green-600 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <Eye className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+            
+            {/* Sparkline */}
+            <div className="h-12 mb-3">
+              <svg className="w-full h-full" viewBox="0 0 100 40">
+                <polyline
+                  fill="none"
+                  stroke="#3B82F6"
+                  strokeWidth="2"
+                  points="0,30 20,20 40,25 60,10 80,15 100,5"
+                />
+              </svg>
+            </div>
+            
+            {/* Micro Legend */}
+            <div className="flex items-center justify-between text-xs text-gray-500">
+              <span>TikTok: 60%</span>
+              <span>IG: 25%</span>
+              <span>FB: 15%</span>
+            </div>
+            
+            {/* Hover Quick Action */}
+            <div className="absolute inset-0 bg-blue-50 bg-opacity-90 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <button className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                View Traffic Sources
+              </button>
+            </div>
+          </div>
+
+          {/* Engagement Rate */}
+          <div className="group relative bg-white rounded-xl border border-gray-100 p-6 hover:shadow-lg transition-all duration-200 cursor-pointer">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Engagement Rate</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalEngagement}%</p>
+                <div className="flex items-center mt-2">
+                  <span className="text-sm text-green-600 font-medium">+8.2%</span>
+                  <svg className="w-4 h-4 text-green-600 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+              <div className="p-3 bg-green-100 rounded-lg">
+                <ThumbsUp className="w-6 h-6 text-green-600" />
+              </div>
+            </div>
+            
+            {/* Sparkline */}
+            <div className="h-12 mb-3">
+              <svg className="w-full h-full" viewBox="0 0 100 40">
+                <polyline
+                  fill="none"
+                  stroke="#10B981"
+                  strokeWidth="2"
+                  points="0,25 20,20 40,15 60,10 80,5 100,0"
+                />
+              </svg>
+            </div>
+            
+            {/* Micro Legend */}
+            <div className="flex items-center justify-between text-xs text-gray-500">
+              <span>TikTok: 55%</span>
+              <span>IG: 30%</span>
+              <span>FB: 15%</span>
+            </div>
+            
+            {/* Hover Quick Action */}
+            <div className="absolute inset-0 bg-green-50 bg-opacity-90 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <button className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors duration-200">
+                View Engagement Details
+              </button>
+            </div>
+          </div>
+
+          {/* Avg Watch Time */}
+          <div className="group relative bg-white rounded-xl border border-gray-100 p-6 hover:shadow-lg transition-all duration-200 cursor-pointer">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Avg Watch Time</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.averageWatchTime}s</p>
+                <div className="flex items-center mt-2">
+                  <span className="text-sm text-green-600 font-medium">+5.3%</span>
+                  <svg className="w-4 h-4 text-green-600 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+              <div className="p-3 bg-orange-100 rounded-lg">
+                <Clock className="w-6 h-6 text-orange-600" />
+              </div>
+            </div>
+            
+            {/* Sparkline */}
+            <div className="h-12 mb-3">
+              <svg className="w-full h-full" viewBox="0 0 100 40">
+                <polyline
+                  fill="none"
+                  stroke="#F59E0B"
+                  strokeWidth="2"
+                  points="0,20 20,25 40,20 60,15 80,20 100,15"
+                />
+              </svg>
+            </div>
+            
+            {/* Micro Legend */}
+            <div className="flex items-center justify-between text-xs text-gray-500">
+              <span>TikTok: 40%</span>
+              <span>IG: 45%</span>
+              <span>FB: 15%</span>
+            </div>
+            
+            {/* Hover Quick Action */}
+            <div className="absolute inset-0 bg-orange-50 bg-opacity-90 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <button className="px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 transition-colors duration-200">
+                View Retention Curve
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Quick Actions */}
+      {/* Enhanced Chart Area */}
       <div className="bg-white rounded-xl border border-gray-100 p-6 mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Quick Actions</h3>
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-gray-900">Performance Analytics</h3>
+          <div className="flex items-center space-x-4">
+            {/* Platform Filters */}
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-500">Platform:</span>
+              <div className="flex space-x-1">
+                {['TikTok', 'Instagram', 'Facebook'].map((platform) => (
+                  <button
+                    key={platform}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors duration-200 ${
+                      platform === 'TikTok'
+                        ? 'bg-blue-50 text-blue-700 border-blue-200'
+                        : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                    }`}
+                  >
+                    {platform}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Metric Toggle */}
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-500">Metric:</span>
+              <select className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="views">Views</option>
+                <option value="ctr">CTR</option>
+                <option value="conversion">Conversion Rate</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        {/* Chart Content */}
+        <div className="bg-gray-50 rounded-lg p-8 text-center">
+          <div className="max-w-md mx-auto">
+            <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h4 className="text-lg font-medium text-gray-900 mb-2">No data yet</h4>
+            <p className="text-gray-600 text-sm mb-4">Generate your first video to see performance analytics and insights</p>
+            <Link
+              href="/dashboard/campaigns/new"
+              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-medium rounded-lg hover:from-purple-700 hover:to-pink-700 transform hover:scale-105 transition-all duration-200"
+            >
+              <Video className="w-4 h-4 mr-2" />
+              Create Your First Video
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Enhanced Quick Actions */}
+      <div className="bg-white rounded-xl border border-gray-100 p-6 mb-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
+          <div className="flex items-center space-x-2">
+            <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+              Campaign Playbook
+            </button>
+            <div className="relative group">
+              <button className="w-5 h-5 text-gray-400 hover:text-gray-600 rounded-full border border-gray-300 flex items-center justify-center">
+                ?
+              </button>
+              <div className="absolute bottom-full right-0 mb-2 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                <p>One-sheet with best-performing templates and proven strategies for UGC campaigns</p>
+                <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link
             href="/dashboard/campaigns/new"
@@ -400,23 +592,75 @@ export default function DashboardPage() {
             </div>
           </Link>
         </div>
+        
+        {/* Contextual CTA for New Users */}
+        {recentCampaigns.length === 0 && (
+          <div className="mt-6 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200 text-center">
+            <h4 className="text-lg font-medium text-gray-900 mb-2">Ready to get started?</h4>
+            <p className="text-gray-600 text-sm mb-4">Create your first UGC campaign and start generating engaging video content</p>
+            <Link
+              href="/dashboard/campaigns/new"
+              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-medium rounded-lg hover:from-purple-700 hover:to-pink-700 transform hover:scale-105 transition-all duration-200"
+            >
+              <Video className="w-5 h-5 mr-2" />
+              Create Your First Campaign
+            </Link>
+          </div>
+        )}
       </div>
 
-      {/* Recent UGC Campaigns */}
+      {/* Enhanced Recent Campaigns */}
       <div className="bg-white rounded-xl border border-gray-100 p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900">Recent UGC Campaigns</h3>
-          <div className="flex items-center space-x-4">
-            <button className="text-sm text-gray-500 hover:text-gray-700">Filter</button>
-            <Link href="/dashboard/campaigns" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
-              View all
-            </Link>
+          <Link href="/dashboard/campaigns" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+            View all
+          </Link>
+        </div>
+        
+        {/* Search & Filters */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search campaigns..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              />
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <select className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="paused">Paused</option>
+              <option value="testing">Testing</option>
+              <option value="completed">Completed</option>
+            </select>
+            
+            <select className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <option value="">All Platforms</option>
+              <option value="tiktok">TikTok</option>
+              <option value="instagram">Instagram</option>
+              <option value="facebook">Facebook</option>
+              <option value="youtube">YouTube</option>
+            </select>
+            
+            <select className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <option value="7d">Last 7 days</option>
+              <option value="30d">Last 30 days</option>
+              <option value="90d">Last 90 days</option>
+            </select>
           </div>
         </div>
         
-        <div className="space-y-4">
+        {/* Campaigns List */}
+        <div className="space-y-3">
           {recentCampaigns.map((campaign) => (
             <div key={campaign.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+              {/* Left: Campaign Info */}
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
                   <Video className="w-6 h-6 text-white" />
@@ -429,24 +673,53 @@ export default function DashboardPage() {
                 </div>
               </div>
               
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(campaign.status)}`}>
-                    {getStatusIcon(campaign.status)} {campaign.status}
-                  </span>
-                  <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-full">
-                    {getPlatformIcon(campaign.platform)} {campaign.platform}
-                  </span>
-                </div>
-                
+              {/* Middle: Platform & Status */}
+              <div className="flex items-center space-x-3">
+                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(campaign.status)}`}>
+                  {getStatusIcon(campaign.status)} {campaign.status}
+                </span>
+                <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-full">
+                  {getPlatformIcon(campaign.platform)} {campaign.platform}
+                </span>
+              </div>
+              
+              {/* Right: KPI Snapshot & Actions */}
+              <div className="flex items-center space-x-6">
                 <div className="text-right">
                   <p className="text-sm font-medium text-gray-900">{campaign.totalViews} views</p>
                   <p className="text-xs text-gray-500">{campaign.watchTime}s avg watch</p>
                 </div>
                 
-                <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
-                  <MoreVertical className="w-4 h-4" />
-                </button>
+                <div className="relative">
+                  <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+                    <MoreVertical className="w-4 h-4" />
+                  </button>
+                  
+                  {/* Dropdown Menu */}
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                    <button className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+                      <Eye className="w-4 h-4 mr-3 text-gray-400" />
+                      View
+                    </button>
+                    <button className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+                      <Copy className="w-4 h-4 mr-3 text-gray-400" />
+                      Duplicate
+                    </button>
+                    <button className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+                      <Download className="w-4 h-4 mr-3 text-gray-400" />
+                      Export
+                    </button>
+                    <button className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+                      <Pause className="w-4 h-4 mr-3 text-gray-400" />
+                      Pause
+                    </button>
+                    <div className="border-t border-gray-200 my-1"></div>
+                    <button className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200">
+                      <Trash2 className="w-4 h-4 mr-3" />
+                      Delete
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           ))}

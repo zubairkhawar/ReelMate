@@ -1,20 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { 
   LayoutDashboard, 
   Video, 
-  ShoppingCart, 
   BarChart3, 
   Settings, 
+  User, 
   LogOut, 
+  Search, 
+  Bell, 
   Menu, 
-  X,
-  User,
-  Bell,
-  Search,
-  ChevronDown,
+  X, 
+  ChevronDown, 
   ChevronRight,
   ChevronLeft,
   ChevronUp,
@@ -28,10 +25,83 @@ import {
   Link as LinkIcon,
   Users2,
   CreditCard,
-  Sparkles
+  Sparkles,
+  Check,
+  Clock,
+  AlertCircle,
+  CheckCircle,
+  Package,
+  Zap,
+  MessageSquare
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+
+interface Notification {
+  id: string
+  type: 'system' | 'order' | 'approval' | 'campaign' | 'integration'
+  title: string
+  description: string
+  timestamp: string
+  isRead: boolean
+  icon: any
+  color: string
+}
+
+const mockNotifications: Notification[] = [
+  {
+    id: '1',
+    type: 'system',
+    title: 'System Update Complete',
+    description: 'Your dashboard has been updated with new features and improvements.',
+    timestamp: '2 minutes ago',
+    isRead: false,
+    icon: Zap,
+    color: 'text-blue-600'
+  },
+  {
+    id: '2',
+    type: 'campaign',
+    title: 'UGC Campaign Approved',
+    description: 'Your "Summer Collection" campaign has been approved and is now live.',
+    timestamp: '15 minutes ago',
+    isRead: false,
+    icon: CheckCircle,
+    color: 'text-green-600'
+  },
+  {
+    id: '3',
+    type: 'integration',
+    title: 'Shopify Sync Successful',
+    description: 'Product data has been successfully synced from your Shopify store.',
+    timestamp: '1 hour ago',
+    isRead: true,
+    icon: Package,
+    color: 'text-purple-600'
+  },
+  {
+    id: '4',
+    type: 'order',
+    title: 'New Video Order',
+    description: 'You have a new video order from client "Fashion Brand Co."',
+    timestamp: '2 hours ago',
+    isRead: false,
+    icon: Package,
+    color: 'text-orange-600'
+  },
+  {
+    id: '5',
+    type: 'approval',
+    title: 'Content Review Required',
+    description: '3 new videos are pending your review and approval.',
+    timestamp: '3 hours ago',
+    isRead: true,
+    icon: AlertCircle,
+    color: 'text-yellow-600'
+  }
+]
 
 const navigation = {
   main: [
@@ -100,11 +170,6 @@ const navigation = {
   ],
   account: [
     {
-      name: 'Profile',
-      href: '/dashboard/profile',
-      icon: User
-    },
-    {
       name: 'Team',
       href: '/dashboard/team',
       icon: Users2
@@ -131,6 +196,8 @@ export default function DashboardLayout({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [expandedSections, setExpandedSections] = useState(['main', 'tools', 'account'])
   const [userDropdownOpen, setUserDropdownOpen] = useState(false)
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications)
   const [user, setUser] = useState<any>(null)
   const router = useRouter()
   const pathname = usePathname()
@@ -153,11 +220,12 @@ export default function DashboardLayout({
   }, [router])
 
   useEffect(() => {
-    // Close dropdown when clicking outside
+    // Close dropdowns when clicking outside
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element
-      if (!target.closest('.user-dropdown')) {
+      if (!target.closest('.user-dropdown') && !target.closest('.notifications-dropdown')) {
         setUserDropdownOpen(false)
+        setNotificationsOpen(false)
       }
     }
 
@@ -178,6 +246,24 @@ export default function DashboardLayout({
         : [...prev, section]
     )
   }
+
+  const markNotificationAsRead = (notificationId: string) => {
+    setNotifications(prev => 
+      prev.map(notification => 
+        notification.id === notificationId 
+          ? { ...notification, isRead: true }
+          : notification
+      )
+    )
+  }
+
+  const markAllAsRead = () => {
+    setNotifications(prev => 
+      prev.map(notification => ({ ...notification, isRead: true }))
+    )
+  }
+
+  const unreadCount = notifications.filter(n => !n.isRead).length
 
   if (!user) {
     return (
@@ -292,7 +378,7 @@ export default function DashboardLayout({
 
       <div className="flex">
         {/* Sidebar */}
-        <div className={`hidden lg:block bg-white shadow-xl ${
+        <div className={`hidden lg:block fixed left-0 top-0 h-screen bg-white shadow-xl z-30 ${
           sidebarCollapsed ? 'w-20' : 'w-64'
         }`}>
           {/* Logo Section */}
@@ -318,7 +404,7 @@ export default function DashboardLayout({
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-3 py-6 overflow-y-auto" style={{ height: 'calc(100vh - 4rem)' }}>
+          <nav className="px-3 py-6 overflow-y-auto" style={{ height: 'calc(100vh - 4rem)' }}>
             {Object.entries(navigation).map(([sectionKey, sectionItems]) => (
               <div key={sectionKey} className="mb-6">
                 {!sidebarCollapsed && (
@@ -369,11 +455,25 @@ export default function DashboardLayout({
                 )}
               </div>
             ))}
+            
+            {/* Usage Meter */}
+            {!sidebarCollapsed && (
+              <div className="absolute bottom-4 left-4 right-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-gray-600">Credits left</span>
+                  <span className="font-medium text-gray-900">1,247</span>
+                </div>
+                <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                  <div className="bg-gradient-to-r from-blue-500 to-purple-500 h-1.5 rounded-full" style={{ width: '75%' }}></div>
+                </div>
+                <div className="mt-1 text-xs text-gray-500">Trial: 12 days left</div>
+              </div>
+            )}
           </nav>
         </div>
 
         {/* Main content */}
-        <div className="flex-1 min-h-screen">
+        <div className={`flex-1 min-h-screen bg-gray-50 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
           {/* Sticky Top Bar */}
           <div className="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
             <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
@@ -403,10 +503,110 @@ export default function DashboardLayout({
 
               {/* Right side */}
               <div className="flex items-center space-x-4">
-                <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg relative">
-                  <Bell className="w-5 h-5" />
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                </button>
+                {/* Notifications */}
+                <div className="relative notifications-dropdown">
+                  <button 
+                    onClick={() => setNotificationsOpen(!notificationsOpen)}
+                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg relative transition-colors duration-200"
+                  >
+                    <Bell className="w-5 h-5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Notifications Dropdown */}
+                  <AnimatePresence>
+                    {notificationsOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
+                      >
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                          <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
+                          {unreadCount > 0 && (
+                            <button
+                              onClick={markAllAsRead}
+                              className="text-xs text-blue-600 hover:text-blue-700 font-medium hover:bg-blue-50 px-2 py-1 rounded transition-colors duration-200"
+                            >
+                              Mark all as read
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Notifications List */}
+                        <div className="max-h-96 overflow-y-auto">
+                          {notifications.length > 0 ? (
+                            notifications.map((notification) => (
+                              <div
+                                key={notification.id}
+                                onClick={() => markNotificationAsRead(notification.id)}
+                                className={`flex items-start px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors duration-200 ${
+                                  notification.isRead 
+                                    ? 'bg-white' 
+                                    : 'bg-blue-50 border-l-4 border-l-blue-500'
+                                }`}
+                              >
+                                {/* Icon */}
+                                <div className="flex-shrink-0 mr-3">
+                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-gray-100`}>
+                                    <notification.icon className={`w-4 h-4 ${notification.color}`} />
+                                  </div>
+                                </div>
+
+                                {/* Content */}
+                                <div className="flex-1 min-w-0">
+                                  <p className={`text-sm font-medium ${
+                                    notification.isRead ? 'text-gray-900' : 'text-blue-900'
+                                  }`}>
+                                    {notification.title}
+                                  </p>
+                                  <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                                    {notification.description}
+                                  </p>
+                                  <div className="flex items-center mt-2 text-xs text-gray-500">
+                                    <Clock className="w-3 h-3 mr-1" />
+                                    {notification.timestamp}
+                                  </div>
+                                </div>
+
+                                {/* Unread Indicator */}
+                                {!notification.isRead && (
+                                  <div className="flex-shrink-0 ml-2">
+                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                  </div>
+                                )}
+                              </div>
+                            ))
+                          ) : (
+                            <div className="px-4 py-8 text-center">
+                              <Bell className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                              <p className="text-sm text-gray-500">No notifications</p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Footer */}
+                        {notifications.length > 0 && (
+                          <div className="border-t border-gray-200 px-4 py-2">
+                            <Link 
+                              href="/dashboard/notifications" 
+                              className="text-xs text-blue-600 hover:text-blue-700 font-medium block text-center hover:bg-blue-50 py-1 rounded transition-colors duration-200"
+                            >
+                              View all notifications
+                            </Link>
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
                 
                 {/* Profile Dropdown */}
                 <div className="relative user-dropdown">
