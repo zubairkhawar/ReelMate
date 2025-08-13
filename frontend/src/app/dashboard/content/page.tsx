@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Search, 
   Filter, 
-  Grid3x3, 
+  Grid, 
   List, 
   FolderOpen, 
   Video, 
@@ -21,7 +21,8 @@ import {
   MoreVertical,
   ChevronDown,
   Play,
-  Volume2
+  Volume2,
+  Upload
 } from 'lucide-react'
 
 interface ContentItem {
@@ -400,7 +401,7 @@ export default function ContentLibraryPage() {
                   onClick={() => setViewMode('grid')}
                   className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-400'}`}
                 >
-                  <Grid3x3 className="w-5 h-5" />
+                  <Grid className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
