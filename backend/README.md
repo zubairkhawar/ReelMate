@@ -84,6 +84,11 @@ A comprehensive backend API for ReelMate - an AI-powered UGC video generation pl
    - For SendGrid: Use your API key
    - Update SMTP settings in `.env`
 
+6. **Set up avatar storage bucket**
+   - Run `npm run setup-avatar` to create the required storage bucket
+   - This requires the `SUPABASE_SERVICE_ROLE_KEY` in your `.env` file
+   - The service role key can be found in your Supabase dashboard under Settings > API
+
 ## 🗄️ Database Setup
 
 Run the following SQL in your Supabase SQL editor:
@@ -107,6 +112,29 @@ npm start
 
 The server will start on `http://localhost:5001`
 
+## 🔧 Troubleshooting
+
+### Avatar Upload Issues
+
+If you encounter avatar upload problems:
+
+1. **"Bucket not found" error**: Run `npm run setup-avatar` to create the storage bucket
+2. **"RLS policy violation" error**: Ensure you have `SUPABASE_SERVICE_ROLE_KEY` in your `.env`
+3. **Permission denied**: Check that your Supabase service role key has storage permissions
+
+### Storage Bucket Setup
+
+The avatar storage bucket is required for profile picture uploads:
+
+```bash
+# Create the avatar bucket (requires service role key)
+npm run setup-avatar
+
+# Check bucket status
+curl -X GET http://localhost:5001/api/profile/avatar-bucket-status \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
 ## 📚 API Endpoints
 
 ### Authentication
@@ -119,6 +147,18 @@ The server will start on `http://localhost:5001`
 - `POST /api/auth/logout` - User logout
 - `GET /api/auth/me` - Get current user profile
 - `GET /api/auth/verify-reset-token/:token` - Verify reset token
+
+### Profile Management
+- `GET /api/profile` - Get user profile
+- `PUT /api/profile` - Update user profile
+- `POST /api/profile/avatar` - Upload avatar
+- `DELETE /api/profile/avatar` - Delete avatar
+- `GET /api/profile/notifications` - Get notification preferences
+- `PUT /api/profile/notifications` - Update notification preferences
+- `GET /api/profile/settings` - Get user settings
+- `PUT /api/profile/settings` - Update user settings
+- `GET /api/profile/export` - Export user data
+- `DELETE /api/profile` - Delete user account
 
 ### Request/Response Examples
 

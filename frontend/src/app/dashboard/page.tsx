@@ -86,6 +86,13 @@ export default function DashboardPage() {
   const fetchDashboardData = async () => {
     try {
       const token = localStorage.getItem('token')
+      
+      // If no token, use mock data immediately
+      if (!token) {
+        setMockData()
+        return
+      }
+
       const response = await fetch('http://localhost:5001/api/analytics/overview', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -94,63 +101,74 @@ export default function DashboardPage() {
 
       if (response.ok) {
         const data = await response.json()
-        setStats(data.stats)
-        setRecentCampaigns(data.recentCampaigns || [])
+        setStats(data.stats || getDefaultStats())
+        setRecentCampaigns(data.recentCampaigns || getDefaultCampaigns())
+      } else {
+        // If API fails, use mock data
+        setMockData()
       }
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error)
-      // Set mock data for UGC video platform
-      setStats({
-        totalVideos: 23,
-        totalViews: 12450,
-        totalEngagement: 3420,
-        averageWatchTime: 4.2,
-        activeCampaigns: 5
-      })
-      setRecentCampaigns([
-        {
-          id: '1',
-          name: 'Summer Collection UGC Campaign',
-          status: 'active',
-          videoCount: 8,
-          totalViews: 3200,
-          engagement: 89,
-          watchTime: 4.2,
-          createdAt: '2024-01-15',
-          thumbnail: '/api/placeholder/60/40',
-          trend: [120, 180, 200, 250, 300, 280, 320],
-          platform: 'tiktok'
-        },
-        {
-          id: '2',
-          name: 'Product Launch UGC Series',
-          status: 'active',
-          videoCount: 12,
-          totalViews: 2100,
-          engagement: 67,
-          watchTime: 3.8,
-          createdAt: '2024-01-12',
-          thumbnail: '/api/placeholder/60/40',
-          trend: [80, 120, 150, 180, 200, 190, 210],
-          platform: 'instagram'
-        },
-        {
-          id: '3',
-          name: 'Holiday UGC Challenge',
-          status: 'completed',
-          videoCount: 15,
-          totalViews: 8900,
-          engagement: 234,
-          watchTime: 4.5,
-          createdAt: '2024-01-08',
-          thumbnail: '/api/placeholder/60/40',
-          trend: [300, 450, 600, 800, 1000, 1200, 890],
-          platform: 'youtube'
-        }
-      ])
+      // Use mock data on error
+      setMockData()
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const getDefaultStats = (): DashboardStats => ({
+    totalVideos: 23,
+    totalViews: 12450,
+    totalEngagement: 3420,
+    averageWatchTime: 4.2,
+    activeCampaigns: 5
+  })
+
+  const getDefaultCampaigns = (): RecentCampaign[] => [
+    {
+      id: '1',
+      name: 'Summer Collection UGC Campaign',
+      status: 'active',
+      videoCount: 8,
+      totalViews: 3200,
+      engagement: 89,
+      watchTime: 4.2,
+      createdAt: '2024-01-15',
+      thumbnail: '/api/placeholder/60/40',
+      trend: [120, 180, 200, 250, 300, 280, 320],
+      platform: 'tiktok'
+    },
+    {
+      id: '2',
+      name: 'Product Launch UGC Series',
+      status: 'active',
+      videoCount: 12,
+      totalViews: 2100,
+      engagement: 67,
+      watchTime: 3.8,
+      createdAt: '2024-01-12',
+      thumbnail: '/api/placeholder/60/40',
+      trend: [80, 120, 150, 180, 200, 190, 210],
+      platform: 'instagram'
+    },
+    {
+      id: '3',
+      name: 'Holiday UGC Challenge',
+      status: 'completed',
+      videoCount: 15,
+      totalViews: 8900,
+      engagement: 234,
+      watchTime: 4.5,
+      createdAt: '2024-01-08',
+      thumbnail: '/api/placeholder/60/40',
+      trend: [300, 450, 600, 800, 1000, 1200, 890],
+      platform: 'youtube'
+    }
+  ]
+
+  const setMockData = () => {
+    setStats(getDefaultStats())
+    setRecentCampaigns(getDefaultCampaigns())
   }
 
   const getStatusColor = (status: string) => {
@@ -225,7 +243,7 @@ export default function DashboardPage() {
     )
   }
 
-  if (isLoading) {
+  if (isLoading || !stats) {
     return (
       <div className="space-y-6">
         <div className="animate-pulse">
@@ -290,7 +308,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total UGC Videos</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalVideos}</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.totalVideos || 0}</p>
                 <div className="flex items-center mt-2">
                   <span className="text-sm text-green-600 font-medium">+18.2%</span>
                   <svg className="w-4 h-4 text-green-600 ml-1" fill="currentColor" viewBox="0 0 20 20">
@@ -341,7 +359,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Views</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalViews.toLocaleString()}</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{(stats?.totalViews || 0).toLocaleString()}</p>
                 <div className="flex items-center mt-2">
                   <span className="text-sm text-green-600 font-medium">+12.5%</span>
                   <svg className="w-4 h-4 text-green-600 ml-1" fill="currentColor" viewBox="0 0 20 20">
@@ -386,7 +404,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm font-medium text-gray-600">Engagement Rate</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalEngagement}%</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.totalEngagement || 0}%</p>
                 <div className="flex items-center mt-2">
                   <span className="text-sm text-green-600 font-medium">+8.2%</span>
                   <svg className="w-4 h-4 text-green-600 ml-1" fill="currentColor" viewBox="0 0 20 20">
@@ -431,7 +449,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm font-medium text-gray-600">Avg Watch Time</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.averageWatchTime}s</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.averageWatchTime || 0}s</p>
                 <div className="flex items-center mt-2">
                   <span className="text-sm text-green-600 font-medium">+5.3%</span>
                   <svg className="w-4 h-4 text-green-600 ml-1" fill="currentColor" viewBox="0 0 20 20">

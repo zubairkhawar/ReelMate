@@ -7,7 +7,8 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "test": "jest",
-    "build": "echo 'No build step required for Node.js'"
+    "build": "echo 'No build step required for Node.js'",
+    "setup-avatar": "node setup-avatar-bucket.js"
   },
   "keywords": [
     "ai",

@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 5001;
 
 // Import routes
 const authRoutes = require('./routes/auth/auth');
+const profileRoutes = require('./routes/profile/profile');
 const shopifyRoutes = require('./routes/shopify/shopify');
 const ugcRoutes = require('./routes/ugc/ugc');
 const analyticsRoutes = require('./routes/analytics/analytics');
@@ -57,6 +58,7 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/profile', profileRoutes);
 app.use('/api/shopify', shopifyRoutes);
 app.use('/api/ugc', ugcRoutes);
 app.use('/api/analytics', analyticsRoutes);
