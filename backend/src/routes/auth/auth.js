@@ -1,24 +1,16 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const router = express.Router();
 
-// Mock user storage (replace with database in production)
-let users = [
-  {
-    id: '1',
-    name: 'John Doe',
-    email: 'john@example.com',
-    password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
-    company: 'Example Corp',
-    createdAt: new Date(),
-    subscription: 'pro'
-  }
-];
+// Import services
+const userService = require('../../services/userService');
+const emailService = require('../../services/emailService');
 
-// JWT secret (use environment variable in production)
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+// JWT configuration
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 // Middleware to verify JWT token
 const authenticateToken = (req, res, next) => {
@@ -55,6 +47,16 @@ const validateForgotPassword = [
   body('email').isEmail().normalizeEmail().withMessage('Valid email is required')
 ];
 
+const validateResetPassword = [
+  body('token').notEmpty().withMessage('Reset token is required'),
+  body('newPassword').isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+];
+
+const validateChangePassword = [
+  body('currentPassword').notEmpty().withMessage('Current password is required'),
+  body('newPassword').isLength({ min: 8 }).withMessage('New password must be at least 8 characters')
+];
+
 // Signup endpoint
 router.post('/signup', validateSignup, async (req, res) => {
   try {
@@ -70,41 +72,32 @@ router.post('/signup', validateSignup, async (req, res) => {
     const { name, email, password, company } = req.body;
 
     // Check if user already exists
-    const existingUser = users.find(user => user.email === email);
+    const existingUser = await userService.findUserByEmail(email);
     if (existingUser) {
       return res.status(409).json({ message: 'User with this email already exists' });
     }
 
-    // Hash password
-    const saltRounds = 12;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
     // Create new user
-    const newUser = {
-      id: (users.length + 1).toString(),
-      name,
-      email,
-      password: hashedPassword,
-      company: company || '',
-      createdAt: new Date(),
-      subscription: 'starter'
-    };
-
-    users.push(newUser);
+    const newUser = await userService.createUser({ name, email, password, company });
 
     // Generate JWT token
     const token = jwt.sign(
       { userId: newUser.id, email: newUser.email },
       JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: JWT_EXPIRES_IN }
     );
 
-    // Remove password from response
-    const { password: _, ...userResponse } = newUser;
+    // Send welcome email
+    try {
+      await emailService.sendWelcomeEmail(email, name);
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError);
+      // Don't fail the signup if email fails
+    }
 
     res.status(201).json({
       message: 'User created successfully',
-      user: userResponse,
+      user: newUser,
       token
     });
 
@@ -129,12 +122,13 @@ router.post('/login', validateLogin, async (req, res) => {
     const { email, password } = req.body;
 
     // Find user by email
-    const user = users.find(u => u.email === email);
+    const user = await userService.findUserByEmail(email);
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
     // Check password
+    const bcrypt = require('bcryptjs');
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       return res.status(401).json({ message: 'Invalid email or password' });
@@ -144,7 +138,7 @@ router.post('/login', validateLogin, async (req, res) => {
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: JWT_EXPIRES_IN }
     );
 
     // Remove password from response
@@ -163,9 +157,9 @@ router.post('/login', validateLogin, async (req, res) => {
 });
 
 // Get current user profile
-router.get('/me', authenticateToken, (req, res) => {
+router.get('/me', authenticateToken, async (req, res) => {
   try {
-    const user = users.find(u => u.id === req.user.userId);
+    const user = await userService.findUserById(req.user.userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -198,7 +192,7 @@ router.post('/forgot-password', validateForgotPassword, async (req, res) => {
     const { email } = req.body;
 
     // Check if user exists
-    const user = users.find(u => u.email === email);
+    const user = await userService.findUserByEmail(email);
     if (!user) {
       // Don't reveal if user exists or not for security
       return res.json({ 
@@ -206,16 +200,20 @@ router.post('/forgot-password', validateForgotPassword, async (req, res) => {
       });
     }
 
-    // Generate reset token (in production, store this securely and set expiration)
-    const resetToken = jwt.sign(
-      { userId: user.id, email: user.email, type: 'password-reset' },
-      JWT_SECRET,
-      { expiresIn: '1h' }
-    );
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + (process.env.PASSWORD_RESET_EXPIRY_HOURS || 1) * 60 * 60 * 1000);
 
-    // In production, send email with reset link
-    // For now, just return success message
-    console.log(`Password reset token for ${email}: ${resetToken}`);
+    // Store reset token in database
+    await userService.createPasswordResetToken(email, resetToken, expiresAt);
+
+    // Send password reset email
+    const resetUrl = process.env.PASSWORD_RESET_URL || 'http://localhost:3000/auth/reset-password';
+    const emailSent = await emailService.sendPasswordResetEmail(email, resetToken, resetUrl);
+
+    if (!emailSent) {
+      return res.status(500).json({ message: 'Failed to send password reset email' });
+    }
 
     res.json({ 
       message: 'If an account with that email exists, we have sent a password reset link.' 
@@ -228,40 +226,55 @@ router.post('/forgot-password', validateForgotPassword, async (req, res) => {
 });
 
 // Reset password endpoint
-router.post('/reset-password', async (req, res) => {
+router.post('/reset-password', validateResetPassword, async (req, res) => {
   try {
     const { token, newPassword } = req.body;
 
-    if (!token || !newPassword) {
-      return res.status(400).json({ message: 'Token and new password are required' });
+    // Find and validate reset token
+    const resetTokenData = await userService.findPasswordResetToken(token);
+    if (!resetTokenData) {
+      return res.status(400).json({ message: 'Invalid or expired reset token' });
     }
 
-    // Verify reset token
-    const decoded = jwt.verify(token, JWT_SECRET);
-    if (decoded.type !== 'password-reset') {
-      return res.status(400).json({ message: 'Invalid reset token' });
-    }
-
-    // Find user
-    const user = users.find(u => u.id === decoded.userId);
+    // Find user by email
+    const user = await userService.findUserByEmail(resetTokenData.email);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Hash new password
-    const saltRounds = 12;
-    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
-
     // Update password
-    user.password = hashedPassword;
+    await userService.updateUserPassword(user.id, newPassword);
+
+    // Mark token as used
+    await userService.markPasswordResetTokenAsUsed(token);
 
     res.json({ message: 'Password reset successfully' });
 
   } catch (error) {
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(400).json({ message: 'Invalid or expired reset token' });
-    }
     console.error('Reset password error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Change password endpoint (for authenticated users)
+router.post('/change-password', authenticateToken, validateChangePassword, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.userId;
+
+    // Verify current password
+    const isCurrentPasswordValid = await userService.verifyPassword(userId, currentPassword);
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({ message: 'Current password is incorrect' });
+    }
+
+    // Update password
+    await userService.updateUserPassword(userId, newPassword);
+
+    res.json({ message: 'Password changed successfully' });
+
+  } catch (error) {
+    console.error('Change password error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
@@ -273,7 +286,7 @@ router.post('/refresh', authenticateToken, (req, res) => {
     const newToken = jwt.sign(
       { userId: req.user.userId, email: req.user.email },
       JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: JWT_EXPIRES_IN }
     );
 
     res.json({
@@ -296,6 +309,31 @@ router.post('/logout', authenticateToken, (req, res) => {
 
   } catch (error) {
     console.error('Logout error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Verify reset token endpoint (for frontend validation)
+router.get('/verify-reset-token/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    const resetTokenData = await userService.findPasswordResetToken(token);
+    if (!resetTokenData) {
+      return res.status(400).json({ 
+        valid: false,
+        message: 'Invalid or expired reset token' 
+      });
+    }
+
+    res.json({ 
+      valid: true,
+      message: 'Reset token is valid',
+      email: resetTokenData.email
+    });
+
+  } catch (error) {
+    console.error('Verify reset token error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });

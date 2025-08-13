@@ -192,23 +192,8 @@ export default function LoginPage() {
               )}
             </button>
 
-            {/* Development Bypass - Remove in Production */}
-            <button
-              type="button"
-              onClick={() => {
-                // Simulate successful login
-                localStorage.setItem('token', 'dev-token-123')
-                localStorage.setItem('user', JSON.stringify({
-                  id: 1,
-                  name: 'Dev User',
-                  email: 'dev@example.com'
-                }))
-                router.push('/dashboard')
-              }}
-              className="w-full mt-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white py-2.5 px-6 rounded-lg font-semibold hover:from-green-600 hover:to-emerald-700 transform hover:scale-105 transition-all duration-200"
-            >
-              🚀 Dev: Skip to Dashboard
-            </button>
+
+
           </form>
 
           {/* Sign Up Link */}

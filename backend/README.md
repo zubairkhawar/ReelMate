@@ -1,273 +1,264 @@
-# ReelMate Backend
+# ReelMate Backend API
 
-A robust Node.js backend API for ReelMate - an AI-powered UGC video generation platform for e-commerce brands.
+A comprehensive backend API for ReelMate - an AI-powered UGC video generation platform.
 
-## Features
+## 🚀 Features
 
-- 🔐 **Authentication**: JWT-based user authentication and authorization
-- 🛍️ **Shopify Integration**: Connect and sync products from Shopify stores
-- 🎬 **UGC Generation**: Create and manage AI-generated video campaigns
-- 📊 **Analytics**: Comprehensive campaign performance tracking
-- 🚀 **RESTful API**: Clean, well-documented API endpoints
-- 🛡️ **Security**: Rate limiting, CORS, helmet security headers
-- 📈 **Scalable**: Modular architecture ready for production
+- **Authentication System**: Complete signup, signin, password reset, and change password functionality
+- **User Management**: User profiles, settings, and preferences
+- **Security**: JWT tokens, password hashing, rate limiting, and CORS protection
+- **Email Service**: Password reset emails and welcome emails
+- **Database**: Supabase integration with PostgreSQL
+- **API Management**: API key generation and management
+- **Integrations**: Third-party service integrations
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-- **Runtime**: Node.js 18+
-- **Framework**: Express.js
-- **Authentication**: JWT + bcryptjs
-- **Validation**: express-validator
-- **Security**: helmet, cors, rate-limiting
-- **Database**: Supabase (PostgreSQL) - ready for integration
-- **AI Integration**: OpenAI API integration ready
-- **Social Media**: TikTok, Facebook, Instagram APIs ready
+- **Node.js** with Express.js
+- **Supabase** (PostgreSQL database)
+- **JWT** for authentication
+- **bcryptjs** for password hashing
+- **Nodemailer** for email services
+- **Express Validator** for input validation
+- **Helmet** for security headers
+- **Rate Limiting** for API protection
 
-## Getting Started
-
-### Prerequisites
+## 📋 Prerequisites
 
 - Node.js 18+ 
 - npm or yarn
-- Supabase account (for production)
+- Supabase account and project
+- SMTP email service (Gmail, SendGrid, etc.)
 
-### Installation
+## 🔧 Installation
 
-1. Install dependencies:
-```bash
-npm install
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd backend
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp env.example .env
+   ```
+   
+   Edit `.env` with your configuration:
+   ```env
+   # Server Configuration
+   PORT=5001
+   NODE_ENV=development
+   
+   # Frontend URL for CORS
+   FRONTEND_URL=http://localhost:3000
+   
+   # JWT Configuration
+   JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+   JWT_EXPIRES_IN=7d
+   
+   # Supabase Configuration
+   SUPABASE_URL=https://your-project.supabase.co
+   SUPABASE_ANON_KEY=your-supabase-anon-key
+   SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+   
+   # Email Configuration (SMTP)
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=587
+   SMTP_USER=your-email@gmail.com
+   SMTP_PASS=your-app-password
+   SMTP_FROM=noreply@reelmate.com
+   ```
+
+4. **Set up Supabase database**
+   - Create a new Supabase project
+   - Run the SQL schema from `database/schema.sql` in your Supabase SQL editor
+   - Copy your project URL and anon key to `.env`
+
+5. **Configure email service**
+   - For Gmail: Enable 2FA and generate an app password
+   - For SendGrid: Use your API key
+   - Update SMTP settings in `.env`
+
+## 🗄️ Database Setup
+
+Run the following SQL in your Supabase SQL editor:
+
+```sql
+-- The complete schema is in database/schema.sql
+-- This will create all necessary tables and indexes
 ```
 
-2. Create environment file:
-```bash
-cp .env.example .env
-# Edit .env with your configuration
-```
+## 🚀 Running the Application
 
-3. Run the development server:
+### Development
 ```bash
 npm run dev
 ```
 
-4. The API will be available at `http://localhost:5001`
-
-### Environment Variables
-
-Create a `.env` file with the following variables:
-
-```env
-# Server Configuration
-PORT=5001
-NODE_ENV=development
-
-# Frontend URL for CORS
-FRONTEND_URL=http://localhost:3000
-
-# JWT Configuration
-JWT_SECRET=your-super-secret-jwt-key
-JWT_EXPIRES_IN=7d
-
-# Database Configuration (Supabase)
-SUPABASE_URL=your-supabase-url
-SUPABASE_ANON_KEY=your-supabase-anon-key
-
-# AI Service Configuration
-OPENAI_API_KEY=your-openai-api-key
-
-# Shopify Configuration
-SHOPIFY_API_KEY=your-shopify-api-key
-SHOPIFY_API_SECRET=your-shopify-api-secret
+### Production
+```bash
+npm start
 ```
 
-## API Endpoints
+The server will start on `http://localhost:5001`
+
+## 📚 API Endpoints
 
 ### Authentication
-
 - `POST /api/auth/signup` - User registration
-- `POST /api/auth/login` - User authentication
-- `GET /api/auth/me` - Get current user profile
+- `POST /api/auth/login` - User login
+- `POST /api/auth/forgot-password` - Request password reset
+- `POST /api/auth/reset-password` - Reset password with token
+- `POST /api/auth/change-password` - Change password (authenticated)
 - `POST /api/auth/refresh` - Refresh JWT token
 - `POST /api/auth/logout` - User logout
+- `GET /api/auth/me` - Get current user profile
+- `GET /api/auth/verify-reset-token/:token` - Verify reset token
 
-### Shopify Integration
+### Request/Response Examples
 
-- `POST /api/shopify/connect` - Connect Shopify store
-- `GET /api/shopify/connections` - Get connected stores
-- `POST /api/shopify/sync-products` - Sync products from store
-- `GET /api/shopify/products` - Get synced products
-- `GET /api/shopify/products/:id` - Get specific product
-- `DELETE /api/shopify/connections/:id` - Disconnect store
+#### Signup
+```json
+POST /api/auth/signup
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "securepassword123",
+  "company": "Tech Corp"
+}
 
-### UGC Video Generation
-
-- `POST /api/ugc/campaigns` - Create new campaign
-- `GET /api/ugc/campaigns` - Get all campaigns
-- `GET /api/ugc/campaigns/:id` - Get specific campaign
-- `POST /api/ugc/generate` - Generate new video
-- `GET /api/ugc/videos` - Get all videos
-- `GET /api/ugc/videos/:id` - Get specific video
-- `POST /api/ugc/videos/:id/publish` - Publish to social platforms
-
-### Analytics
-
-- `GET /api/analytics/overview` - Dashboard overview
-- `GET /api/analytics/trends` - Performance trends over time
-- `GET /api/analytics/campaigns` - Campaign performance details
-- `GET /api/analytics/platforms` - Platform performance details
-- `GET /api/analytics/export` - Export analytics data
-
-## Project Structure
-
-```
-src/
-├── server.js              # Main server file
-├── routes/                # API route handlers
-│   ├── auth/             # Authentication routes
-│   │   └── auth.js       # Auth route handlers
-│   ├── shopify/          # Shopify integration routes
-│   │   └── shopify.js    # Shopify route handlers
-│   ├── ugc/              # UGC video generation routes
-│   │   └── ugc.js        # UGC route handlers
-│   └── analytics/        # Analytics and reporting routes
-│       └── analytics.js  # Analytics route handlers
-├── controllers/           # Business logic controllers
-├── middleware/            # Custom middleware functions
-├── services/             # External service integrations
-├── utils/                # Utility functions
-└── config/               # Configuration files
+Response:
+{
+  "message": "User created successfully",
+  "user": {
+    "id": "uuid",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "company": "Tech Corp",
+    "subscription": "starter"
+  },
+  "token": "jwt-token"
+}
 ```
 
-## Development
+#### Login
+```json
+POST /api/auth/login
+{
+  "email": "john@example.com",
+  "password": "securepassword123"
+}
 
-### Running Tests
+Response:
+{
+  "message": "Login successful",
+  "user": { ... },
+  "token": "jwt-token"
+}
+```
+
+#### Change Password
+```json
+POST /api/auth/change-password
+Headers: Authorization: Bearer <jwt-token>
+{
+  "currentPassword": "oldpassword",
+  "newPassword": "newsecurepassword123"
+}
+```
+
+## 🔐 Security Features
+
+- **Password Hashing**: bcrypt with 12 salt rounds
+- **JWT Tokens**: Secure token-based authentication
+- **Rate Limiting**: 100 requests per 15 minutes per IP
+- **CORS Protection**: Configurable origin restrictions
+- **Input Validation**: Comprehensive request validation
+- **Security Headers**: Helmet.js for security headers
+
+## 📧 Email Features
+
+- **Welcome Emails**: Sent to new users upon signup
+- **Password Reset**: Secure password reset via email
+- **HTML Templates**: Professional email templates
+- **SMTP Support**: Gmail, SendGrid, and other SMTP providers
+
+## 🗃️ Database Schema
+
+The database includes tables for:
+- Users and authentication
+- Password reset tokens
+- User sessions
+- API keys
+- User integrations
+- Notification preferences
+- User settings
+
+## 🧪 Testing
 
 ```bash
 npm test
 ```
 
-### Code Quality
+## 📝 Environment Variables
 
-The project uses ESLint for code quality. Run:
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PORT` | Server port | 5001 |
+| `NODE_ENV` | Environment | development |
+| `FRONTEND_URL` | Frontend URL for CORS | http://localhost:3000 |
+| `JWT_SECRET` | JWT signing secret | Required |
+| `JWT_EXPIRES_IN` | JWT expiration | 7d |
+| `SUPABASE_URL` | Supabase project URL | Required |
+| `SUPABASE_ANON_KEY` | Supabase anonymous key | Required |
+| `SMTP_HOST` | SMTP server host | smtp.gmail.com |
+| `SMTP_PORT` | SMTP server port | 587 |
+| `SMTP_USER` | SMTP username | Required |
+| `SMTP_PASS` | SMTP password | Required |
 
+## 🚨 Error Handling
+
+The API includes comprehensive error handling:
+- Validation errors with detailed messages
+- Authentication errors
+- Database errors
+- Rate limiting errors
+- Global error handler
+
+## 📊 Monitoring
+
+- Health check endpoint: `GET /health`
+- Request logging with Morgan
+- Error logging to console
+- Rate limiting monitoring
+
+## 🔄 Rate Limiting
+
+- **Window**: 15 minutes
+- **Max Requests**: 100 per IP
+- **Headers**: Rate limit info included in responses
+
+## 🚀 Deployment
+
+### Docker (Recommended)
 ```bash
-npm run lint
+docker build -t reelmate-backend .
+docker run -p 5001:5001 reelmate-backend
 ```
 
-### Building for Production
-
-```bash
-npm run build
-npm start
-```
-
-## API Documentation
-
-### Authentication Flow
-
-1. **Signup**: `POST /api/auth/signup`
-   ```json
-   {
-     "email": "user@example.com",
-     "password": "securepassword",
-     "name": "John Doe",
-     "company": "Example Corp"
-   }
-   ```
-
-2. **Login**: `POST /api/auth/login`
-   ```json
-   {
-     "email": "user@example.com",
-     "password": "securepassword"
-   }
-   ```
-
-3. **Use Token**: Include in Authorization header
-   ```
-   Authorization: Bearer <jwt-token>
-   ```
-
-### Shopify Integration Flow
-
-1. **Connect Store**: `POST /api/shopify/connect`
-   ```json
-   {
-     "shopDomain": "https://mystore.myshopify.com",
-     "accessToken": "shpat_..."
-   }
-   ```
-
-2. **Sync Products**: `POST /api/shopify/sync-products`
-   ```json
-   {
-     "shopDomain": "https://mystore.myshopify.com"
-   }
-   ```
-
-### UGC Video Generation Flow
-
-1. **Create Campaign**: `POST /api/ugc/campaigns`
-   ```json
-   {
-     "productId": "prod_123",
-     "campaignName": "Summer Sale Campaign",
-     "targetPlatforms": ["tiktok", "instagram"],
-     "videoLength": "30"
-   }
-   ```
-
-2. **Generate Video**: `POST /api/ugc/generate`
-   ```json
-   {
-     "campaignId": "camp_123",
-     "avatarStyle": "friendly",
-     "voiceStyle": "female",
-     "scriptTone": "conversational"
-   }
-   ```
-
-3. **Publish Video**: `POST /api/ugc/videos/:id/publish`
-   ```json
-   {
-     "platforms": ["tiktok", "instagram"]
-   }
-   ```
-
-## Security Features
-
-- **Rate Limiting**: 100 requests per 15 minutes per IP
-- **CORS Protection**: Configurable origin restrictions
-- **Helmet Security**: Security headers and CSP
-- **Input Validation**: Request validation with express-validator
-- **JWT Authentication**: Secure token-based authentication
-- **Password Hashing**: bcryptjs for secure password storage
-
-## Performance Features
-
-- **Compression**: gzip compression for responses
-- **Logging**: Morgan HTTP request logging
-- **Error Handling**: Global error handler with proper status codes
-- **Response Caching**: Ready for Redis integration
-
-## Production Deployment
-
-### Environment Setup
-
+### Manual Deployment
 1. Set `NODE_ENV=production`
-2. Configure production database (Supabase)
-3. Set secure JWT secret
-4. Configure CORS for production domain
-5. Set up SSL/TLS certificates
+2. Use strong `JWT_SECRET`
+3. Configure production SMTP settings
+4. Set up proper CORS origins
+5. Use environment-specific database URLs
 
-### Scaling Considerations
-
-- **Database**: Use Supabase production instance
-- **Caching**: Integrate Redis for session and data caching
-- **Load Balancing**: Use multiple server instances
-- **Monitoring**: Integrate with monitoring services
-- **Backup**: Regular database backups
-
-## Contributing
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -275,10 +266,24 @@ npm start
 4. Add tests if applicable
 5. Submit a pull request
 
-## License
+## 📄 License
 
-This project is part of the ReelMate platform.
+MIT License - see LICENSE file for details
 
-## Support
+## 🆘 Support
 
-For support and questions, please contact the development team.
+For support and questions:
+- Create an issue in the repository
+- Check the documentation
+- Review the API endpoints
+
+## 🔮 Future Enhancements
+
+- [ ] Two-factor authentication (2FA)
+- [ ] OAuth integration (Google, GitHub)
+- [ ] Role-based access control
+- [ ] Audit logging
+- [ ] Webhook support
+- [ ] Real-time notifications
+- [ ] File upload handling
+- [ ] Analytics and monitoring
