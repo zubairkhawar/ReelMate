@@ -57,15 +57,7 @@ interface ApiKey {
   key: string
 }
 
-interface TeamMember {
-  id: string
-  name: string
-  email: string
-  role: 'admin' | 'manager' | 'editor' | 'viewer'
-  status: 'active' | 'pending' | 'inactive'
-  lastActive: string
-  avatar: string
-}
+
 
 interface ActivityLog {
   id: string
@@ -119,35 +111,7 @@ const mockApiKeys: ApiKey[] = [
   }
 ]
 
-const mockTeamMembers: TeamMember[] = [
-  {
-    id: '1',
-    name: 'Sarah Johnson',
-    email: 'sarah@company.com',
-    role: 'manager',
-    status: 'active',
-    lastActive: '2 hours ago',
-    avatar: '/api/placeholder/40/40'
-  },
-  {
-    id: '2',
-    name: 'Mike Chen',
-    email: 'mike@company.com',
-    role: 'editor',
-    status: 'active',
-    lastActive: '1 day ago',
-    avatar: '/api/placeholder/40/40'
-  },
-  {
-    id: '3',
-    name: 'Emily Davis',
-    email: 'emily@company.com',
-    role: 'viewer',
-    status: 'pending',
-    lastActive: 'Never',
-    avatar: '/api/placeholder/40/40'
-  }
-]
+
 
 const mockActivityLog: ActivityLog[] = [
   {
@@ -201,24 +165,7 @@ export default function ProfilePage() {
     setShowApiKey(showApiKey === keyId ? null : keyId)
   }
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'admin': return 'bg-red-100 text-red-800'
-      case 'manager': return 'bg-blue-100 text-blue-800'
-      case 'editor': return 'bg-green-100 text-green-800'
-      case 'viewer': return 'bg-gray-100 text-gray-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
-  }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800'
-      case 'pending': return 'bg-yellow-100 text-yellow-800'
-      case 'inactive': return 'bg-gray-100 text-gray-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
-  }
 
   return (
     <div className="space-y-6">
@@ -466,45 +413,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Team Management */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Team Members</h3>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
-                <Plus className="w-4 h-4 mr-2 inline" />
-                Invite Member
-              </button>
-            </div>
 
-            <div className="space-y-4">
-              {mockTeamMembers.map((member) => (
-                <div key={member.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                      <User className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900">{member.name}</h4>
-                      <p className="text-sm text-gray-500">{member.email}</p>
-                      <p className="text-xs text-gray-400">Last active: {member.lastActive}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getRoleColor(member.role)}`}>
-                      {member.role}
-                    </span>
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(member.status)}`}>
-                      {member.status}
-                    </span>
-                    <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
-                      <Settings className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* Right Panel - Activity & Quick Actions */}
@@ -555,13 +464,7 @@ export default function ProfilePage() {
                 <span>Notification Preferences</span>
               </Link>
               
-              <Link
-                href="/dashboard/team"
-                className="flex items-center p-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200"
-              >
-                <Users className="w-5 h-5 mr-3 text-purple-600" />
-                <span>Team Management</span>
-              </Link>
+              
               
               <Link
                 href="/dashboard/integrations"

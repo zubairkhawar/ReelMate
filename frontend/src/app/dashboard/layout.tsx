@@ -10,7 +10,7 @@ import {
   Search, 
   Bell, 
   Menu, 
-  X, 
+  X,
   ChevronDown, 
   ChevronRight,
   ChevronLeft,
@@ -23,7 +23,7 @@ import {
   Layers,
   Download,
   Link as LinkIcon,
-  Users2,
+
   CreditCard,
   Sparkles,
   Check,
@@ -169,11 +169,7 @@ const navigation = {
     }
   ],
   account: [
-    {
-      name: 'Team',
-      href: '/dashboard/team',
-      icon: Users2
-    },
+
     {
       name: 'Billing',
       href: '/dashboard/billing',
@@ -304,7 +300,7 @@ export default function DashboardLayout({
             className="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl lg:hidden"
           >
             {/* Logo Section */}
-            <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
+        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
               <div className="flex items-center space-x-3">
                 <img 
                   src="/svg.png" 
@@ -314,14 +310,14 @@ export default function DashboardLayout({
                 <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   ReelMate
                 </span>
-              </div>
-              <button
-                onClick={() => setSidebarOpen(false)}
+          </div>
+          <button
+            onClick={() => setSidebarOpen(false)}
                 className="p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
             {/* Navigation */}
             <nav className="flex-1 px-3 py-6 overflow-y-auto">
@@ -341,8 +337,8 @@ export default function DashboardLayout({
                         <ChevronDown className="w-3 h-3 text-gray-400" />
                       )}
                     </button>
-                  </div>
-                  
+        </div>
+
                   {expandedSections.includes(sectionKey) && (
                     <div className="space-y-1">
                       {sectionItems.map((item) => {
@@ -383,7 +379,7 @@ export default function DashboardLayout({
         }`}>
           {/* Logo Section */}
           <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
-            <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3">
               <img 
                 src="/svg.png" 
                 alt="ReelMate Logo" 
@@ -401,9 +397,9 @@ export default function DashboardLayout({
             >
               {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
             </button>
-          </div>
+        </div>
 
-          {/* Navigation */}
+        {/* Navigation */}
           <nav className="px-3 py-6 overflow-y-auto" style={{ height: 'calc(100vh - 4rem)' }}>
             {Object.entries(navigation).map(([sectionKey, sectionItems]) => (
               <div key={sectionKey} className="mb-6">
@@ -426,32 +422,32 @@ export default function DashboardLayout({
                 )}
                 
                 {expandedSections.includes(sectionKey) && (
-                  <div className="space-y-1">
+          <div className="space-y-1">
                     {sectionItems.map((item) => {
-                      const isActive = pathname === item.href
-                      return (
-                        <Link
-                          key={item.name}
-                          href={item.href}
-                          className={`group flex items-center px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${
-                            isActive
-                              ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                              : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                          }`}
+              const isActive = pathname === item.href
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`group flex items-center px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${
+                    isActive
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
                           title={sidebarCollapsed ? item.name : undefined}
-                        >
-                          <item.icon
+                >
+                  <item.icon
                             className={`transition-colors duration-200 ${
                               sidebarCollapsed ? 'mx-auto' : 'mr-3'
                             } h-5 w-5 ${
-                              isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-500'
-                            }`}
-                          />
+                      isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-500'
+                    }`}
+                  />
                           {!sidebarCollapsed && item.name}
-                        </Link>
-                      )
-                    })}
-                  </div>
+                </Link>
+              )
+            })}
+          </div>
                 )}
               </div>
             ))}
@@ -469,47 +465,47 @@ export default function DashboardLayout({
                 <div className="mt-1 text-xs text-gray-500">Trial: 12 days left</div>
               </div>
             )}
-          </nav>
-        </div>
+        </nav>
+      </div>
 
-        {/* Main content */}
+      {/* Main content */}
         <div className={`flex-1 min-h-screen bg-gray-50 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
           {/* Sticky Top Bar */}
           <div className="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
-            <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100"
-              >
-                <Menu className="w-5 h-5" />
-              </button>
+          <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
 
               {/* Page Title */}
               <div className="flex-1 max-w-lg mx-4 lg:mx-8">
                 <h1 className="text-lg font-semibold text-gray-900">Dashboard</h1>
               </div>
 
-              {/* Search */}
-              <div className="flex-1 max-w-lg mx-4 lg:mx-8">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search campaigns, products..."
+            {/* Search */}
+            <div className="flex-1 max-w-lg mx-4 lg:mx-8">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search campaigns, products..."
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
+                />
               </div>
+            </div>
 
-              {/* Right side */}
-              <div className="flex items-center space-x-4">
+            {/* Right side */}
+            <div className="flex items-center space-x-4">
                 {/* Notifications */}
                 <div className="relative notifications-dropdown">
                   <button 
                     onClick={() => setNotificationsOpen(!notificationsOpen)}
                     className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg relative transition-colors duration-200"
                   >
-                    <Bell className="w-5 h-5" />
+                <Bell className="w-5 h-5" />
                     {unreadCount > 0 && (
                       <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
                         {unreadCount > 9 ? '9+' : unreadCount}
@@ -667,21 +663,21 @@ export default function DashboardLayout({
                         >
                           <LogOut className="w-4 h-4 mr-3" />
                           Sign Out
-                        </button>
+              </button>
                       </motion.div>
                     )}
                   </AnimatePresence>
                 </div>
               </div>
-            </div>
           </div>
+        </div>
 
-          {/* Page content */}
-          <main className="py-6">
-            <div className="px-4 sm:px-6 lg:px-8">
-              {children}
-            </div>
-          </main>
+        {/* Page content */}
+        <main className="py-6">
+          <div className="px-4 sm:px-6 lg:px-8">
+            {children}
+          </div>
+        </main>
         </div>
       </div>
     </div>
