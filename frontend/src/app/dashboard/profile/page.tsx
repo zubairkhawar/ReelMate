@@ -3,35 +3,18 @@
 import { useState } from 'react'
 import { 
   User, 
-  Mail, 
-  Lock, 
-  Shield, 
-  Key, 
-  Users, 
-  Activity, 
-  Download,
-  Edit,
-  Save,
+  Edit, 
+  Save, 
   X,
-  Plus,
-  Trash2,
-  Eye,
-  EyeOff,
-  CheckCircle,
-  AlertCircle,
-  Clock,
-  Globe,
-  Building,
+  Building2,
   Phone,
+  Globe,
   MapPin,
-  CreditCard,
-  Settings,
+  Calendar,
+  Clock,
   Bell,
-  Smartphone,
-  QrCode,
-  ExternalLink,
-  ChevronDown,
-  ChevronRight
+  CreditCard,
+  Settings
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -39,115 +22,28 @@ interface UserProfile {
   id: string
   name: string
   email: string
-  company: string
-  timezone: string
-  phone: string
-  avatar: string
   role: string
+  company: string
+  phone: string
+  timezone: string
   joinDate: string
-}
-
-interface ApiKey {
-  id: string
-  name: string
-  provider: string
-  lastUsed: string
-  usage: string
-  status: 'active' | 'expired' | 'revoked'
-  key: string
-}
-
-
-
-interface ActivityLog {
-  id: string
-  action: string
-  description: string
-  timestamp: string
-  ip: string
   location: string
-  device: string
 }
 
 const mockUserProfile: UserProfile = {
   id: '1',
   name: 'John Doe',
   email: 'john.doe@company.com',
-  company: 'Tech Solutions Inc.',
-  timezone: 'UTC-5 (Eastern Time)',
+  role: 'Product Manager',
+  company: 'TechCorp Inc.',
   phone: '+1 (555) 123-4567',
-  avatar: '/api/placeholder/100/100',
-  role: 'Admin',
-  joinDate: 'January 2024'
+  timezone: 'UTC-5',
+  joinDate: 'January 2023',
+  location: 'New York, NY'
 }
 
-const mockApiKeys: ApiKey[] = [
-  {
-    id: '1',
-    name: 'OpenAI Production',
-    provider: 'OpenAI',
-    lastUsed: '2 hours ago',
-    usage: '1,247 requests',
-    status: 'active',
-    key: 'sk-...abc123'
-  },
-  {
-    id: '2',
-    name: 'ElevenLabs Voice',
-    provider: 'ElevenLabs',
-    lastUsed: '1 day ago',
-    usage: '89 voice generations',
-    status: 'active',
-    key: 'xi-api-...def456'
-  },
-  {
-    id: '3',
-    name: 'Stable Diffusion',
-    provider: 'Stability AI',
-    lastUsed: '3 days ago',
-    usage: '234 image generations',
-    status: 'expired',
-    key: 'sk-...ghi789'
-  }
-]
-
-
-
-const mockActivityLog: ActivityLog[] = [
-  {
-    id: '1',
-    action: 'Login',
-    description: 'Successful login from New York, NY',
-    timestamp: '2 hours ago',
-    ip: '192.168.1.1',
-    location: 'New York, NY',
-    device: 'Chrome on MacOS'
-  },
-  {
-    id: '2',
-    action: 'Campaign Created',
-    description: 'Created new UGC campaign "Summer Collection"',
-    timestamp: '4 hours ago',
-    ip: '192.168.1.1',
-    location: 'New York, NY',
-    device: 'Chrome on MacOS'
-  },
-  {
-    id: '3',
-    action: 'API Key Updated',
-    description: 'Updated OpenAI API key',
-    timestamp: '1 day ago',
-    ip: '192.168.1.1',
-    location: 'New York, NY',
-    device: 'Chrome on MacOS'
-  }
-]
-
 export default function ProfilePage() {
-  const [activeTab, setActiveTab] = useState('profile')
   const [isEditing, setIsEditing] = useState(false)
-  const [showAdvanced, setShowAdvanced] = useState(false)
-  const [showApiKey, setShowApiKey] = useState<string | null>(null)
   const [profile, setProfile] = useState(mockUserProfile)
   const [editedProfile, setEditedProfile] = useState(mockUserProfile)
 
@@ -161,22 +57,16 @@ export default function ProfilePage() {
     setIsEditing(false)
   }
 
-  const toggleApiKeyVisibility = (keyId: string) => {
-    setShowApiKey(showApiKey === keyId ? null : keyId)
-  }
-
-
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Profile & Settings</h1>
-        <p className="text-gray-600 mt-1">Manage your account, security, and team access</p>
+        <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
+        <p className="text-gray-600 mt-1">Manage your personal information and account details</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Panel - Profile & Security */}
+        {/* Left Panel - Profile Information */}
         <div className="lg:col-span-2 space-y-6">
           {/* Profile Card */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
@@ -303,147 +193,10 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-
-          {/* Security Settings */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Security</h3>
-            
-            <div className="space-y-6">
-              {/* Password */}
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Lock className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900">Password</h4>
-                    <p className="text-sm text-gray-500">Last changed 30 days ago</p>
-                  </div>
-                </div>
-                <Link
-                  href="/dashboard/change-password"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
-                >
-                  Change Password
-                </Link>
-              </div>
-
-              {/* 2FA */}
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <Shield className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900">Two-Factor Authentication</h4>
-                    <p className="text-sm text-gray-500">SMS verification enabled</p>
-                  </div>
-                </div>
-                <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200">
-                  <Settings className="w-4 h-4 mr-2 inline" />
-                  Configure
-                </button>
-              </div>
-
-              {/* SSO */}
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <Globe className="w-5 h-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900">Single Sign-On (SSO)</h4>
-                    <p className="text-sm text-gray-500">Google Workspace connected</p>
-                  </div>
-                </div>
-                <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200">
-                  <Settings className="w-4 h-4 mr-2 inline" />
-                  Manage
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* API Keys */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">API Keys & Integrations</h3>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
-                <Plus className="w-4 h-4 mr-2 inline" />
-                Add API Key
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {mockApiKeys.map((apiKey) => (
-                <div key={apiKey.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-gray-100 rounded-lg">
-                      <Key className="w-5 h-5 text-gray-600" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900">{apiKey.name}</h4>
-                      <p className="text-sm text-gray-500">{apiKey.provider} • {apiKey.usage}</p>
-                      <p className="text-xs text-gray-400">Last used: {apiKey.lastUsed}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      apiKey.status === 'active' ? 'bg-green-100 text-green-800' :
-                      apiKey.status === 'expired' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
-                      {apiKey.status}
-                    </span>
-                    
-                    <button
-                      onClick={() => toggleApiKeyVisibility(apiKey.id)}
-                      className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
-                    >
-                      {showApiKey === apiKey.id ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                    
-                    <button className="p-2 text-red-400 hover:text-red-600 hover:bg-red-100 rounded-lg">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-
         </div>
 
-        {/* Right Panel - Activity & Quick Actions */}
+        {/* Right Panel - Quick Actions */}
         <div className="lg:col-span-1 space-y-6">
-          {/* Activity Log */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
-            <div className="space-y-4">
-              {mockActivityLog.map((activity) => (
-                <div key={activity.id} className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">{activity.action}</p>
-                    <p className="text-xs text-gray-500">{activity.description}</p>
-                    <p className="text-xs text-gray-400 mt-1">{activity.timestamp}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <Link 
-                href="/dashboard/activity" 
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium block text-center"
-              >
-                View all activity
-              </Link>
-            </div>
-          </div>
-
           {/* Quick Actions */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
@@ -463,8 +216,6 @@ export default function ProfilePage() {
                 <Bell className="w-5 h-5 mr-3 text-green-600" />
                 <span>Notification Preferences</span>
               </Link>
-              
-              
               
               <Link
                 href="/dashboard/integrations"
@@ -491,12 +242,8 @@ export default function ProfilePage() {
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Credits</span>
-                <span className="text-sm font-medium text-gray-900">1,247 remaining</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Next billing</span>
-                <span className="text-sm font-medium text-gray-900">March 15, 2024</span>
+                <span className="text-sm text-gray-600">Next Billing</span>
+                <span className="text-sm font-medium text-gray-900">Dec 15, 2024</span>
               </div>
             </div>
           </div>

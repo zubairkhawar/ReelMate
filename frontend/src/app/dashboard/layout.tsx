@@ -32,7 +32,11 @@ import {
   CheckCircle,
   Package,
   Zap,
-  MessageSquare
+  MessageSquare,
+  Lock,
+  Eye,
+  EyeOff,
+  Shield
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
@@ -170,6 +174,27 @@ export default function DashboardLayout({
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications)
   const [user, setUser] = useState<any>(null)
+  
+  // Password change modal state
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [passwordStrength, setPasswordStrength] = useState(0)
+  const [requirements, setRequirements] = useState({
+    minLength: false,
+    hasUppercase: false,
+    hasLowercase: false,
+    hasNumber: false,
+    hasSpecialChar: false
+  })
+  const [passwordMessage, setPasswordMessage] = useState('')
+  const [passwordMessageType, setPasswordMessageType] = useState('')
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
+  
   const router = useRouter()
   const pathname = usePathname()
 
@@ -232,6 +257,147 @@ export default function DashboardLayout({
     setNotifications(prev => 
       prev.map(notification => ({ ...notification, isRead: true }))
     )
+  }
+
+  // Password strength calculation
+  const calculatePasswordStrength = (password: string) => {
+    let strength = 0
+    const newRequirements = {
+      minLength: password.length >= 8,
+      hasUppercase: /[A-Z]/.test(password),
+      hasLowercase: /[a-z]/.test(password),
+      hasNumber: /\d/.test(password),
+      hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    }
+
+    setRequirements(newRequirements)
+
+    // Calculate strength percentage
+    const totalRequirements = Object.keys(newRequirements).length
+    const metRequirements = Object.values(newRequirements).filter(Boolean).length
+    strength = (metRequirements / totalRequirements) * 100
+
+    setPasswordStrength(strength)
+    return strength
+  }
+
+  const handleNewPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const password = e.target.value
+    setNewPassword(password)
+    calculatePasswordStrength(password)
+  }
+
+  const getPasswordStrengthColor = () => {
+    if (passwordStrength < 40) return 'bg-red-500'
+    if (passwordStrength < 70) return 'bg-yellow-500'
+    return 'bg-green-500'
+  }
+
+  const getPasswordStrengthText = () => {
+    if (passwordStrength < 40) return 'Weak'
+    if (passwordStrength < 70) return 'Fair'
+    return 'Strong'
+  }
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsChangingPassword(true)
+    setPasswordMessage('')
+    setPasswordMessageType('')
+
+    // Validation
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordMessage('All fields are required')
+      setPasswordMessageType('error')
+      setIsChangingPassword(false)
+      return
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordMessage('New passwords do not match')
+      setPasswordMessageType('error')
+      setIsChangingPassword(false)
+      return
+    }
+
+    if (passwordStrength < 70) {
+      setPasswordMessage('Password is too weak. Please meet all requirements.')
+      setPasswordMessageType('error')
+      setIsChangingPassword(false)
+      return
+    }
+
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        setPasswordMessage('Authentication required. Please log in again.')
+        setPasswordMessageType('error')
+        setIsChangingPassword(false)
+        return
+      }
+
+      const response = await fetch('http://localhost:5001/api/auth/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setPasswordMessage('Password changed successfully!')
+        setPasswordMessageType('success')
+        setCurrentPassword('')
+        setNewPassword('')
+        setConfirmPassword('')
+        setPasswordStrength(0)
+        setRequirements({
+          minLength: false,
+          hasUppercase: false,
+          hasLowercase: false,
+          hasNumber: false,
+          hasSpecialChar: false
+        })
+        
+        // Close modal after 2 seconds
+        setTimeout(() => {
+          setShowPasswordModal(false)
+          setPasswordMessage('')
+          setPasswordMessageType('')
+        }, 2000)
+      } else {
+        setPasswordMessage(data.message || 'Failed to change password')
+        setPasswordMessageType('error')
+      }
+    } catch (error) {
+      setPasswordMessage('An error occurred. Please try again.')
+      setPasswordMessageType('error')
+    } finally {
+      setIsChangingPassword(false)
+    }
+  }
+
+  const resetPasswordModal = () => {
+    setShowPasswordModal(false)
+    setCurrentPassword('')
+    setNewPassword('')
+    setConfirmPassword('')
+    setPasswordStrength(0)
+    setRequirements({
+      minLength: false,
+      hasUppercase: false,
+      hasLowercase: false,
+      hasNumber: false,
+      hasSpecialChar: false
+    })
+    setPasswordMessage('')
+    setPasswordMessageType('')
   }
 
   const unreadCount = notifications.filter(n => !n.isRead).length
@@ -617,7 +783,7 @@ export default function DashboardLayout({
                         <button
                           onClick={() => {
                             setUserDropdownOpen(false)
-                            router.push('/dashboard/change-password')
+                            setShowPasswordModal(true)
                           }}
                           className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-all duration-200"
                         >
@@ -655,6 +821,279 @@ export default function DashboardLayout({
         </main>
         </div>
       </div>
+
+      {/* Password Change Modal */}
+      <AnimatePresence>
+        {showPasswordModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 overflow-y-auto"
+            onClick={() => resetPasswordModal()}
+          >
+            <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+              <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+              
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                  <div className="sm:flex sm:items-start">
+                    <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg leading-6 font-medium text-gray-900">
+                          Change Password
+                        </h3>
+                        <button
+                          onClick={() => resetPasswordModal()}
+                          className="text-gray-400 hover:text-gray-600"
+                        >
+                          <X className="w-6 h-6" />
+                        </button>
+                      </div>
+                      
+                      <form onSubmit={handlePasswordChange} className="space-y-4">
+                        {/* Current Password */}
+                        <div>
+                          <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                            Current Password
+                          </label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <Lock className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <input
+                              id="currentPassword"
+                              type={showCurrentPassword ? 'text' : 'password'}
+                              value={currentPassword}
+                              onChange={(e) => setCurrentPassword(e.target.value)}
+                              className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                              placeholder="Enter your current password"
+                              required
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                            >
+                              {showCurrentPassword ? (
+                                <EyeOff className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                              ) : (
+                                <Eye className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* New Password */}
+                        <div>
+                          <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                            New Password
+                          </label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <Shield className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <input
+                              id="newPassword"
+                              type={showNewPassword ? 'text' : 'password'}
+                              value={newPassword}
+                              onChange={handleNewPasswordChange}
+                              className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                              placeholder="Enter your new password"
+                              required
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowNewPassword(!showNewPassword)}
+                              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                            >
+                              {showNewPassword ? (
+                                <EyeOff className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                              ) : (
+                                <Eye className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                              )}
+                            </button>
+                          </div>
+
+                          {/* Password Strength Indicator */}
+                          {newPassword && (
+                            <div className="mt-2">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs text-gray-600">Strength:</span>
+                                <span className={`text-xs font-medium ${
+                                  passwordStrength < 40 ? 'text-red-600' : 
+                                  passwordStrength < 70 ? 'text-yellow-600' : 'text-green-600'
+                                }`}>
+                                  {getPasswordStrengthText()}
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                <div 
+                                  className={`h-1.5 rounded-full transition-all duration-300 ${getPasswordStrengthColor()}`}
+                                  style={{ width: `${passwordStrength}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Password Requirements */}
+                          {newPassword && (
+                            <div className="mt-2 space-y-1">
+                              <div className="grid grid-cols-1 gap-1 text-xs">
+                                <div className={`flex items-center ${requirements.minLength ? 'text-green-600' : 'text-gray-500'}`}>
+                                  {requirements.minLength ? (
+                                    <CheckCircle className="w-3 h-3 mr-1" />
+                                  ) : (
+                                    <AlertCircle className="w-3 h-3 mr-1" />
+                                  )}
+                                  At least 8 characters
+                                </div>
+                                <div className={`flex items-center ${requirements.hasUppercase ? 'text-green-600' : 'text-gray-500'}`}>
+                                  {requirements.hasUppercase ? (
+                                    <CheckCircle className="w-3 h-3 mr-1" />
+                                  ) : (
+                                    <AlertCircle className="w-3 h-3 mr-1" />
+                                  )}
+                                  One uppercase letter
+                                </div>
+                                <div className={`flex items-center ${requirements.hasLowercase ? 'text-green-600' : 'text-gray-500'}`}>
+                                  {requirements.hasLowercase ? (
+                                    <CheckCircle className="w-3 h-3 mr-1" />
+                                  ) : (
+                                    <AlertCircle className="w-3 h-3 mr-1" />
+                                  )}
+                                  One lowercase letter
+                                </div>
+                                <div className={`flex items-center ${requirements.hasNumber ? 'text-green-600' : 'text-gray-500'}`}>
+                                  {requirements.hasNumber ? (
+                                    <CheckCircle className="w-3 h-4 mr-1" />
+                                  ) : (
+                                    <AlertCircle className="w-3 h-3 mr-1" />
+                                  )}
+                                  One number
+                                </div>
+                                <div className={`flex items-center ${requirements.hasSpecialChar ? 'text-green-600' : 'text-gray-500'}`}>
+                                  {requirements.hasSpecialChar ? (
+                                    <CheckCircle className="w-3 h-3 mr-1" />
+                                  ) : (
+                                    <AlertCircle className="w-3 h-3 mr-1" />
+                                  )}
+                                  One special character
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Confirm New Password */}
+                        <div>
+                          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                            Confirm New Password
+                          </label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <Lock className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <input
+                              id="confirmPassword"
+                              type={showConfirmPassword ? 'text' : 'password'}
+                              value={confirmPassword}
+                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                              placeholder="Confirm your new password"
+                              required
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                            >
+                              {showConfirmPassword ? (
+                                <EyeOff className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                              ) : (
+                                <Eye className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                              )}
+                            </button>
+                          </div>
+                          
+                          {/* Password Match Indicator */}
+                          {confirmPassword && (
+                            <div className="mt-2 flex items-center">
+                              {newPassword === confirmPassword ? (
+                                <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
+                              ) : (
+                                <AlertCircle className="w-4 h-4 text-red-600 mr-2" />
+                              )}
+                              <span className={`text-xs ${
+                                newPassword === confirmPassword ? 'text-green-600' : 'text-red-600'
+                              }`}>
+                                {newPassword === confirmPassword ? 'Passwords match' : 'Passwords do not match'}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Message Display */}
+                        {passwordMessage && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={`p-3 rounded-lg border ${
+                              passwordMessageType === 'success' 
+                                ? 'bg-green-50 border-green-200 text-green-800' 
+                                : 'bg-red-50 border-red-200 text-red-800'
+                            }`}
+                          >
+                            <div className="flex items-center">
+                              {passwordMessageType === 'success' ? (
+                                <CheckCircle className="w-4 h-4 mr-2" />
+                              ) : (
+                                <AlertCircle className="w-4 h-4 mr-2" />
+                              )}
+                              {passwordMessage}
+                            </div>
+                          </motion.div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="flex items-center justify-end space-x-3 pt-4">
+                          <button
+                            type="button"
+                            onClick={() => resetPasswordModal()}
+                            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={isChangingPassword || passwordStrength < 70 || newPassword !== confirmPassword}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
+                          >
+                            {isChangingPassword ? (
+                              <div className="flex items-center">
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                                Changing...
+                              </div>
+                            ) : (
+                              'Change Password'
+                            )}
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
