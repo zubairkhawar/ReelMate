@@ -126,37 +126,12 @@ const navigation = {
       icon: FolderOpen
     },
     {
-      name: 'Creators',
-      href: '/dashboard/creators',
-      icon: Users
-    },
-    {
-      name: 'Brands',
-      href: '/dashboard/brands',
-      icon: Building2
-    },
-    {
-      name: 'Templates',
-      href: '/dashboard/templates',
-      icon: FileText
-    },
-    {
       name: 'AI Studio',
       href: '/dashboard/ai-studio',
       icon: Sparkles
     }
   ],
   tools: [
-    {
-      name: 'Video Editor',
-      href: '/dashboard/video-editor',
-      icon: Scissors
-    },
-    {
-      name: 'Batch Processing',
-      href: '/dashboard/batch-processing',
-      icon: Layers
-    },
     {
       name: 'Export Tools',
       href: '/dashboard/export',

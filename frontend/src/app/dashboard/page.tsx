@@ -256,7 +256,7 @@ export default function DashboardPage() {
           className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold"
         >
           <Plus className="w-5 h-5 mr-2" />
-          Create UGC Campaign
+          Create New Campaign
         </Link>
       </div>
 
