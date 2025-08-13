@@ -1,6 +1,13 @@
-const supabase = require('../config/database');
+const { createClient } = require('@supabase/supabase-js');
 const path = require('path');
 const crypto = require('crypto');
+
+// Create two Supabase clients - one for regular operations, one for admin operations
+const supabase = require('../config/database');
+const supabaseAdmin = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 class FileUploadService {
   constructor() {
@@ -39,9 +46,9 @@ class FileUploadService {
       console.log('📁 Generated file path:', filePath);
       console.log('📁 File name:', fileName);
 
-      // Upload to Supabase Storage
-      console.log('📤 Starting upload to Supabase storage...');
-      const { data, error } = await supabase.storage
+      // Upload to Supabase Storage using admin client
+      console.log('📤 Starting upload to Supabase storage with admin client...');
+      const { data, error } = await supabaseAdmin.storage
         .from(this.bucketName)
         .upload(filePath, file.buffer, {
           contentType: file.mimetype,
@@ -56,9 +63,9 @@ class FileUploadService {
 
       console.log('✅ File uploaded successfully to Supabase');
 
-      // Get public URL
-      console.log('🔗 Generating public URL...');
-      const { data: urlData } = supabase.storage
+      // Get public URL using admin client
+      console.log('🔗 Generating public URL with admin client...');
+      const { data: urlData } = supabaseAdmin.storage
         .from(this.bucketName)
         .getPublicUrl(filePath);
       
@@ -143,22 +150,29 @@ class FileUploadService {
 
   async createAvatarBucket() {
     try {
-      // Check if bucket exists
-      const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+      // Check if bucket exists using admin client
+      console.log('🔍 Using admin client to check buckets...');
+      const { data: buckets, error: listError } = await supabaseAdmin.storage.listBuckets();
       
       if (listError) {
-        console.error('Error listing buckets:', listError);
+        console.error('❌ Error listing buckets with admin client:', listError);
         return false;
       }
 
+      console.log('🔍 Checking for bucket:', this.bucketName);
+      console.log('📋 All available buckets:', buckets.map(b => b.name));
+      
       const bucketExists = buckets.some(bucket => bucket.name === this.bucketName);
       
       if (!bucketExists) {
-        console.log('Avatar bucket does not exist. Please create it manually in Supabase dashboard.');
-        console.log('Or run: npm run setup-avatar');
+        console.log('❌ Avatar bucket does not exist. Please create it manually in Supabase dashboard.');
+        console.log('🔍 Looking for bucket named exactly:', this.bucketName);
+        console.log('📋 Available buckets:', buckets.map(b => b.name));
+        console.log('💡 Make sure the bucket name is exactly:', this.bucketName);
         return false;
       } else {
-        console.log('Avatar bucket already exists');
+        console.log('✅ Avatar bucket exists:', this.bucketName);
+        console.log('📋 Available buckets:', buckets.map(b => b.name));
       }
 
       return true;

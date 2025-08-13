@@ -173,7 +173,17 @@ export default function DashboardLayout({
   const [userDropdownOpen, setUserDropdownOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications)
-  const [user, setUser] = useState<any>(null)
+  interface User {
+    id: string
+    name: string
+    email: string
+    avatar_url?: string
+    company?: string
+    phone?: string
+    timezone?: string
+  }
+  
+  const [user, setUser] = useState<User | null>(null)
   
   // Password change modal state
   const [showPasswordModal, setShowPasswordModal] = useState(false)
@@ -209,11 +219,50 @@ export default function DashboardLayout({
     }
 
     try {
-      setUser(JSON.parse(userData))
+      const parsedUser = JSON.parse(userData)
+      setUser(parsedUser)
+      
+      // Fetch current user profile to get updated avatar
+      fetchUserProfile(token, parsedUser.id)
     } catch (error) {
       router.push('/auth/login')
     }
   }, [router])
+
+  const fetchUserProfile = async (token: string, userId: string) => {
+    try {
+      const response = await fetch('http://localhost:5001/api/profile', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.profile) {
+          // Update user state with fresh profile data
+          setUser(prev => ({
+            ...prev,
+            ...data.profile
+          }))
+          
+          // Update localStorage with fresh user data
+          const updatedUser = { ...user, ...data.profile }
+          localStorage.setItem('user', JSON.stringify(updatedUser))
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error)
+    }
+  }
+
+  // Function to refresh user profile (can be called from other components)
+  const refreshUserProfile = () => {
+    const token = localStorage.getItem('token')
+    if (token && user) {
+      fetchUserProfile(token, user.id)
+    }
+  }
 
   useEffect(() => {
     // Close dropdowns when clicking outside
@@ -225,8 +274,18 @@ export default function DashboardLayout({
       }
     }
 
+    // Listen for avatar update events
+    const handleAvatarUpdate = () => {
+      refreshUserProfile()
+    }
+
     document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    window.addEventListener('avatar-updated', handleAvatarUpdate)
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      window.removeEventListener('avatar-updated', handleAvatarUpdate)
+    }
   }, [])
 
   const handleLogout = () => {
@@ -751,8 +810,18 @@ export default function DashboardLayout({
                     onClick={() => setUserDropdownOpen(!userDropdownOpen)}
                     className="flex items-center space-x-2 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
                   >
-                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                      <User className="w-4 h-4 text-white" />
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden">
+                      {user.avatar_url ? (
+                        <img 
+                          src={user.avatar_url} 
+                          alt="Profile Avatar" 
+                          className="w-8 h-8 object-cover"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                          <User className="w-4 h-4 text-white" />
+                        </div>
+                      )}
                     </div>
                     <span className="text-sm font-medium text-gray-700">{user.name}</span>
                   </button>

@@ -222,6 +222,9 @@ export default function ProfilePage() {
         console.log('🔄 Frontend: Refreshing profile from backend...')
         await fetchUserProfile()
         
+        // Dispatch event to notify navbar to refresh user profile
+        window.dispatchEvent(new CustomEvent('avatar-updated'))
+        
         setMessage({ type: 'success', text: 'Avatar uploaded successfully!' })
         
         // Clear message after 3 seconds
