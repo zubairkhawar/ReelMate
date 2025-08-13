@@ -131,13 +131,6 @@ The design uses a consistent color palette:
 - Efficient CSS with Tailwind
 - Next.js optimization features
 
-## Browser Support
-
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
-
 ## Contributing
 
 1. Fork the repository
