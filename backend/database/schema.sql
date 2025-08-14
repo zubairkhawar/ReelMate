@@ -1,18 +1,21 @@
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Users table
-CREATE TABLE IF NOT EXISTS users (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  name VARCHAR(255) NOT NULL,
+-- Users table with OAuth support
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email VARCHAR(255) UNIQUE NOT NULL,
-  password VARCHAR(255) NOT NULL,
+  password_hash VARCHAR(255), -- NULL for OAuth users
+  name VARCHAR(255) NOT NULL,
   company VARCHAR(255),
-  subscription VARCHAR(50) DEFAULT 'starter',
-  email_verified BOOLEAN DEFAULT FALSE,
-  phone VARCHAR(20),
+  phone VARCHAR(50),
   timezone VARCHAR(50) DEFAULT 'UTC',
   avatar_url TEXT,
+  subscription VARCHAR(50) DEFAULT 'starter',
+  email_verified BOOLEAN DEFAULT false,
+  oauth_provider VARCHAR(50), -- 'google', 'apple', etc.
+  oauth_id VARCHAR(255), -- OAuth provider's user ID
+  last_login TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

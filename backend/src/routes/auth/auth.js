@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const router = express.Router();
+const passport = require('passport');
 
 // Import services
 const userService = require('../../services/userService');
@@ -335,6 +336,86 @@ router.get('/verify-reset-token/:token', async (req, res) => {
   } catch (error) {
     console.error('Verify reset token error:', error);
     res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// OAuth Routes
+// Google OAuth
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+router.get('/google/callback', 
+  passport.authenticate('google', { session: false, failureRedirect: '/auth/login' }),
+  async (req, res) => {
+    try {
+      const user = req.user;
+      
+      // Generate JWT token
+      const token = jwt.sign(
+        { userId: user.id, email: user.email },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRES_IN }
+      );
+
+      // Remove password from response
+      const { password: _, ...userResponse } = user;
+
+      // Redirect to frontend with token
+      const redirectUrl = `${process.env.FRONTEND_URL}/auth/oauth-callback?token=${token}&user=${encodeURIComponent(JSON.stringify(userResponse))}`;
+      res.redirect(redirectUrl);
+    } catch (error) {
+      console.error('Google OAuth callback error:', error);
+      res.redirect(`${process.env.FRONTEND_URL}/auth/login?error=oauth_failed`);
+    }
+  }
+);
+
+// Apple OAuth
+router.get('/apple', passport.authenticate('apple', { scope: ['email', 'name'] }));
+
+router.post('/apple/callback', 
+  passport.authenticate('apple', { session: false, failureRedirect: '/auth/login' }),
+  async (req, res) => {
+    try {
+      const user = req.user;
+      
+      // Generate JWT token
+      const token = jwt.sign(
+        { userId: user.id, email: user.email },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRES_IN }
+      );
+
+      // Remove password from response
+      const { password: _, ...userResponse } = user;
+
+      // Redirect to frontend with token
+      const redirectUrl = `${process.env.FRONTEND_URL}/auth/oauth-callback?token=${token}&user=${encodeURIComponent(JSON.stringify(userResponse))}`;
+      res.redirect(redirectUrl);
+    } catch (error) {
+      console.error('Apple OAuth callback error:', error);
+      res.redirect(`${process.env.FRONTEND_URL}/auth/login?error=oauth_failed`);
+    }
+  }
+);
+
+// OAuth callback handler for frontend
+router.get('/oauth-callback', async (req, res) => {
+  try {
+    const { token, user } = req.query;
+    
+    if (!token || !user) {
+      return res.status(400).json({ message: 'Invalid OAuth callback' });
+    }
+
+    res.json({
+      success: true,
+      message: 'OAuth authentication successful',
+      token,
+      user: JSON.parse(decodeURIComponent(user))
+    });
+  } catch (error) {
+    console.error('OAuth callback error:', error);
+    res.status(500).json({ message: 'OAuth callback failed' });
   }
 });
 
