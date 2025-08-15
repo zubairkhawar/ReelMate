@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { 
   ArrowLeft,
@@ -12,26 +12,30 @@ import {
   Calendar,
   DollarSign,
   Play,
-  Camera,
-  Share2,
-  TrendingUp,
-  Plus,
-  Search,
-  Filter,
-  Heart,
-  Share2 as ShareIcon,
-  Volume2,
-  RotateCcw,
+  Loader2,
+  Mic,
+  Edit3,
+  Eye,
   Download,
-  History,
-  Palette,
-  Sliders,
-  ChevronDown,
-  ChevronRight,
-  X,
-  Mic
+  Upload,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  Zap,
+  Lightbulb,
+  MessageSquare,
+  Settings,
+  BarChart3,
+  Youtube,
+  Instagram,
+  Facebook,
+  Twitter
 } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+
+// API endpoints
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api'
 
 const campaignTypes = [
   { value: 'ugc-video', label: 'UGC Video Campaign', icon: Video, description: 'Create authentic user-generated content videos', color: 'from-purple-500 to-pink-600' },
@@ -41,152 +45,37 @@ const campaignTypes = [
 ]
 
 const platformOptions = [
-  { value: 'tiktok', label: 'TikTok', icon: '🎵', description: 'Short-form vertical videos' },
-  { value: 'instagram', label: 'Instagram', icon: '📷', description: 'Reels and IGTV content' },
-  { value: 'youtube', label: 'YouTube', icon: '▶️', description: 'Long-form video content' },
-  { value: 'facebook', label: 'Facebook', icon: '📘', description: 'Social media video posts' },
-  { value: 'multi-platform', label: 'Multi-Platform', icon: '🌐', description: 'Cross-platform distribution' }
+  { value: 'tiktok', label: 'TikTok', icon: '🎵', description: 'Short-form vertical videos', color: 'from-pink-500 to-purple-600' },
+  { value: 'instagram', label: 'Instagram', icon: '📷', description: 'Reels and IGTV content', color: 'from-purple-500 to-pink-600' },
+  { value: 'youtube', label: 'YouTube', icon: '▶️', description: 'Long-form video content', color: 'from-red-500 to-red-600' },
+  { value: 'facebook', label: 'Facebook', icon: '📘', description: 'Social media video posts', color: 'from-blue-500 to-blue-600' },
+  { value: 'multi-platform', label: 'Multi-Platform', icon: '🌐', description: 'Cross-platform distribution', color: 'from-gray-500 to-gray-600' }
 ]
 
 const videoFormats = [
-  { value: 'short-form', label: 'Short Form (15-60s)', description: 'Perfect for TikTok, Instagram Reels' },
-  { value: 'medium-form', label: 'Medium Form (1-3 min)', description: 'Great for Instagram, Facebook' },
-  { value: 'long-form', label: 'Long Form (3+ min)', description: 'Ideal for YouTube, detailed content' }
+  { value: 'vertical-9-16', label: 'Vertical (9:16)', description: 'Perfect for TikTok, Instagram Reels, YouTube Shorts', icon: '📱' },
+  { value: 'horizontal-16-9', label: 'Horizontal (16:9)', description: 'Standard for YouTube, Facebook, LinkedIn', icon: '🖥️' },
+  { value: 'square-1-1', label: 'Square (1:1)', description: 'Great for Instagram posts, Facebook feeds', icon: '⬜' },
+  { value: 'landscape-4-5', label: 'Landscape (4:5)', description: 'Instagram feed posts, Facebook stories', icon: '📐' }
 ]
 
-// AI Studio Data
-const promptTemplates = [
-  {
-    id: '1',
-    name: 'Product Showcase',
-    category: 'Demo',
-    description: 'Highlight product features with compelling storytelling',
-    isFavorite: true,
-    isShared: false,
-    usage: 156,
-    rating: 4.8
-  },
-  {
-    id: '2',
-    name: 'Customer Testimonial',
-    category: 'Testimonial',
-    description: 'Authentic customer story with emotional connection',
-    isFavorite: false,
-    isShared: true,
-    usage: 89,
-    rating: 4.6
-  },
-  {
-    id: '3',
-    name: 'Pain-Agitate-Solve',
-    category: 'Pain-Agitate-Solve',
-    description: 'Identify problem, amplify pain, present solution',
-    isFavorite: true,
-    isShared: true,
-    usage: 234,
-    rating: 4.9
-  },
-  {
-    id: '4',
-    name: 'Before & After',
-    category: 'Comparison',
-    description: 'Show transformation with clear before/after states',
-    isFavorite: false,
-    isShared: false,
-    usage: 67,
-    rating: 4.7
-  },
-  {
-    id: '5',
-    name: 'Urgency CTA',
-    category: 'CTA',
-    description: 'Create urgency with limited-time offers',
-    isFavorite: false,
-    isShared: false,
-    usage: 45,
-    rating: 4.5
-  }
+const avatarOptions = [
+  { id: '550e8400-e29b-41d4-a716-446655440001', name: 'Sarah', gender: 'Female', ethnicity: 'Caucasian', style: 'Professional', thumbnail: '👩‍💼' },
+  { id: '550e8400-e29b-41d4-a716-446655440002', name: 'Marcus', gender: 'Male', ethnicity: 'African American', style: 'Casual', thumbnail: '👨‍💻' },
+  { id: '550e8400-e29b-41d4-a716-446655440003', name: 'Priya', gender: 'Female', ethnicity: 'South Asian', style: 'Friendly', thumbnail: '👩‍🎓' },
+  { id: '550e8400-e29b-41d4-a716-446655440004', name: 'Alex', gender: 'Male', ethnicity: 'Hispanic', style: 'Energetic', thumbnail: '👨‍🎤' }
 ]
 
-const avatars = [
-  {
-    id: '1',
-    name: 'Sarah',
-    gender: 'Female',
-    ethnicity: 'Caucasian',
-    style: 'Professional',
-    thumbnail: '/api/placeholder/80/80',
-    sampleClip: '/api/placeholder/video'
-  },
-  {
-    id: '2',
-    name: 'Marcus',
-    gender: 'Male',
-    ethnicity: 'African American',
-    style: 'Casual',
-    thumbnail: '/api/placeholder/80/80',
-    sampleClip: '/api/placeholder/video'
-  },
-  {
-    id: '3',
-    name: 'Priya',
-    gender: 'Female',
-    ethnicity: 'South Asian',
-    style: 'Friendly',
-    thumbnail: '/api/placeholder/80/80',
-    sampleClip: '/api/placeholder/video'
-  },
-  {
-    id: '4',
-    name: 'Alex',
-    gender: 'Male',
-    ethnicity: 'Hispanic',
-    style: 'Energetic',
-    thumbnail: '/api/placeholder/80/80',
-    sampleClip: '/api/placeholder/video'
-  }
-]
-
-const voices = [
-  {
-    id: '1',
-    name: 'US Male Neutral',
-    gender: 'Male',
-    accent: 'American',
-    language: 'English',
-    tone: 'Neutral',
-    sampleAudio: '/api/placeholder/audio'
-  },
-  {
-    id: '2',
-    name: 'UK Female Warm',
-    gender: 'Female',
-    accent: 'British',
-    language: 'English',
-    tone: 'Warm',
-    sampleAudio: '/api/placeholder/audio'
-  },
-  {
-    id: '3',
-    name: 'Energetic',
-    gender: 'Male',
-    accent: 'American',
-    language: 'English',
-    tone: 'Energetic',
-    sampleAudio: '/api/placeholder/audio'
-  },
-  {
-    id: '4',
-    name: 'Calm',
-    gender: 'Female',
-    accent: 'American',
-    language: 'English',
-    tone: 'Calm',
-    sampleAudio: '/api/placeholder/audio'
-  }
+const voiceOptions = [
+  { id: '550e8400-e29b-41d4-a716-446655440005', name: 'Emma', gender: 'Female', accent: 'US English', tone: 'Warm & Friendly', preview: '🎤' },
+  { id: '550e8400-e29b-41d4-a716-446655440006', name: 'James', gender: 'Male', accent: 'British', tone: 'Professional', preview: '🎤' },
+  { id: '550e8400-e29b-41d4-a716-446655440007', name: 'Sophia', gender: 'Female', accent: 'Australian', tone: 'Casual', preview: '🎤' },
+  { id: '550e8400-e29b-41d4-a716-446655440008', name: 'Michael', gender: 'Male', accent: 'US English', tone: 'Energetic', preview: '🎤' }
 ]
 
 export default function NewCampaignPage() {
+  const router = useRouter()
+  const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState({
     name: '',
     type: '',
@@ -194,34 +83,170 @@ export default function NewCampaignPage() {
     platforms: [] as string[],
     videoFormat: '',
     targetAudience: '',
-    videoCount: '',
+    videoCount: '1',
     budget: '',
     startDate: '',
     endDate: '',
     hashtags: '',
-    callToAction: ''
+    callToAction: '',
+    product: '',
+    script: '',
+    selectedAvatar: '',
+    selectedVoice: '',
+    generationSettings: {
+      duration: 30,
+      quality: 'high',
+      style: 'professional'
+    }
   })
 
-  // AI Studio States
-  const [showAIStudio, setShowAIStudio] = useState(false)
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('1')
-  const [selectedAvatar, setSelectedAvatar] = useState<string>('1')
-  const [selectedVoice, setSelectedVoice] = useState<string>('1')
-  const [script, setScript] = useState('')
-  const [toneSettings, setToneSettings] = useState({
-    excited: 50,
-    formal: 50
-  })
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isGeneratingScript, setIsGeneratingScript] = useState(false)
+  const [isGeneratingVideo, setIsGeneratingVideo] = useState(false)
+  const [generatedVideo, setGeneratedVideo] = useState<any>(null)
+  const [showPreview, setShowPreview] = useState(false)
 
-  const characterCount = script.length
-  const estimatedDuration = Math.ceil(characterCount / 150) // Rough estimate: 150 chars per second
+  const totalSteps = 7
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const nextStep = () => {
+    console.log('Current step:', currentStep, 'Can proceed:', canProceedToNextStep())
+    if (currentStep < totalSteps && canProceedToNextStep()) {
+      setCurrentStep(currentStep + 1)
+    }
+  }
+
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1)
+    }
+  }
+
+  const generateScript = async () => {
+    if (!formData.product || !formData.targetAudience) {
+      alert('Please fill in product and target audience first')
+      return
+    }
+
+    setIsGeneratingScript(true)
+    try {
+      // Simulate AI script generation
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      const generatedScript = `🎯 **Hook (0-5s):**
+"Hey there! Ever struggled with ${formData.product}? You're not alone!"
+
+💡 **Problem (5-15s):**
+"Most people think ${formData.product} is complicated or expensive. But what if I told you there's a better way?"
+
+✨ **Solution (15-25s):**
+"With our ${formData.product}, you get amazing results without the hassle. Perfect for ${formData.targetAudience} who want quality and simplicity."
+
+🚀 **CTA (25-30s):**
+"Ready to transform your experience? Try ${formData.product} today and see the difference!"
+
+**Tone:** Friendly, relatable, solution-focused
+**Pace:** Builds from problem to solution
+**Key Words:** Transform, results, simple, quality`
+
+      setFormData(prev => ({ ...prev, script: generatedScript }))
+    } catch (error) {
+      console.error('Error generating script:', error)
+      alert('Failed to generate script. Please try again.')
+    } finally {
+      setIsGeneratingScript(false)
+    }
+  }
+
+  const generateVideo = async () => {
+    if (!formData.script || !formData.selectedAvatar || !formData.selectedVoice) {
+      alert('Please complete script, avatar, and voice selection')
+      return
+    }
+
+    console.log('Generating video with:', {
+      script: formData.script,
+      avatarId: formData.selectedAvatar,
+      voiceId: formData.selectedVoice,
+      generationSettings: formData.generationSettings
+    })
+
+    setIsGeneratingVideo(true)
+    try {
+      const response = await fetch(`${API_BASE}/ai-studio/generate-video`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          script: formData.script,
+          avatarId: formData.selectedAvatar,
+          voiceId: formData.selectedVoice,
+          generationSettings: formData.generationSettings
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setGeneratedVideo(data)
+        alert('Video generation started successfully!')
+        nextStep()
+      } else {
+        const error = await response.json()
+        alert(`Error: ${error.message || 'Failed to start video generation'}`)
+      }
+    } catch (error) {
+      console.error('Error generating video:', error)
+      alert('Failed to start video generation')
+    } finally {
+      setIsGeneratingVideo(false)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission
-    console.log('UGC Campaign data:', formData)
+    
+    if (!formData.name || !formData.type || formData.platforms.length === 0) {
+      alert('Please fill in all required fields')
+      return
+    }
+
+    try {
+      setIsLoading(true)
+      
+      const response = await fetch(`${API_BASE}/campaigns`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          type: formData.type,
+          platforms: formData.platforms,
+          videoFormat: formData.videoFormat,
+          targetAudience: formData.targetAudience,
+          budget: parseFloat(formData.budget) || 0,
+          description: formData.description,
+          hashtags: formData.hashtags,
+          callToAction: formData.callToAction,
+          startDate: formData.startDate || null,
+          endDate: formData.endDate || null
+        })
+      })
+
+      const data = await response.json()
+      
+      if (response.ok) {
+        alert('Campaign created successfully!')
+        router.push('/dashboard/campaigns')
+      } else {
+        alert(`Error: ${data.message || 'Failed to create campaign'}`)
+      }
+    } catch (error) {
+      console.error('Error creating campaign:', error)
+      alert('Failed to create campaign. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handlePlatformToggle = (platform: string) => {
@@ -231,6 +256,557 @@ export default function NewCampaignPage() {
         ? prev.platforms.filter(p => p !== platform)
         : [...prev.platforms, platform]
     }))
+  }
+
+  const canProceedToNextStep = () => {
+    switch (currentStep) {
+      case 1: // Campaign Setup
+        return formData.name.trim() !== '' && formData.type !== ''
+      case 2: // Product & Platform
+        return formData.product.trim() !== '' && 
+               formData.targetAudience.trim() !== '' && 
+               formData.platforms.length > 0 && 
+               formData.videoFormat !== ''
+      case 3: // AI Script
+        return formData.script.trim() !== ''
+      case 4: // Avatar & Voice
+        return formData.selectedAvatar !== '' && formData.selectedVoice !== ''
+      case 5: // Generate Video
+        return true // Can always proceed to next step
+      case 6: // Preview & Edit
+        return true // Can always proceed to next step
+      default:
+        return false
+    }
+  }
+
+  const getStepRequirements = () => {
+    switch (currentStep) {
+      case 1:
+        return ['Campaign name', 'Campaign type']
+      case 2:
+        return ['Product/service', 'Target audience', 'Platforms', 'Video format']
+      case 3:
+        return ['Video script (AI generated or manual)']
+      case 4:
+        return ['AI avatar selection', 'AI voice selection']
+      case 5:
+        return ['Ready to generate video']
+      case 6:
+        return ['Video processing']
+      case 7:
+        return ['Ready to publish']
+      default:
+        return []
+    }
+  }
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <div className="space-y-6">
+            <h3 className="text-xl font-semibold text-gray-900">Campaign Setup</h3>
+            
+            {/* Campaign Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Campaign Name *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="e.g., Summer Collection UGC Challenge"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+
+            {/* Campaign Type Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Campaign Type *
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {campaignTypes.map((type) => (
+                  <label
+                    key={type.value}
+                    className={`relative flex items-start p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
+                      formData.type === type.value
+                        ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="type"
+                      value={type.value}
+                      checked={formData.type === type.value}
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                      className="sr-only"
+                    />
+                    <div className="flex items-start space-x-3">
+                      <div className={`w-12 h-12 bg-gradient-to-r ${type.color} rounded-lg flex items-center justify-center`}>
+                        <type.icon className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900">{type.label}</p>
+                        <p className="text-sm text-gray-600">{type.description}</p>
+                      </div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Campaign Description
+              </label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Describe your campaign goals and objectives..."
+                rows={3}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+          </div>
+        )
+
+      case 2:
+        return (
+          <div className="space-y-6">
+            <h3 className="text-xl font-semibold text-gray-900">Product & Platform Selection</h3>
+            
+            {/* Product */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Product/Service *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.product}
+                onChange={(e) => setFormData({ ...formData, product: e.target.value })}
+                placeholder="e.g., AI Automation Tool, Fitness App, Beauty Product"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+
+            {/* Target Audience */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Target Audience *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.targetAudience}
+                onChange={(e) => setFormData({ ...formData, targetAudience: e.target.value })}
+                placeholder="e.g., Busy professionals aged 25-40, Fitness enthusiasts, Small business owners"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+
+            {/* Platform Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Target Platforms *
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {platformOptions.map((platform) => (
+                  <button
+                    key={platform.value}
+                    type="button"
+                    onClick={() => handlePlatformToggle(platform.value)}
+                    className={`p-3 border-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      formData.platforms.includes(platform.value)
+                        ? 'border-purple-500 bg-purple-50 text-purple-700'
+                        : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <span className="text-lg">{platform.icon}</span>
+                      <span>{platform.label}</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">{platform.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Video Format */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Video Format *
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {videoFormats.map((format) => (
+                  <label
+                    key={format.value}
+                    className={`relative flex items-start p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
+                      formData.videoFormat === format.value
+                        ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="videoFormat"
+                      value={format.value}
+                      checked={formData.videoFormat === format.value}
+                      onChange={(e) => setFormData({ ...formData, videoFormat: e.target.value })}
+                      className="sr-only"
+                    />
+                    <div className="flex items-center space-x-3">
+                      <span className="text-2xl">{format.icon}</span>
+                      <div>
+                        <p className="font-medium text-gray-900">{format.label}</p>
+                        <p className="text-xs text-gray-500">{format.description}</p>
+                      </div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        )
+
+      case 3:
+        return (
+          <div className="space-y-6">
+            <h3 className="text-xl font-semibold text-gray-900">AI Script Generation</h3>
+            
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border border-blue-200">
+              <div className="flex items-center space-x-3 mb-4">
+                <Lightbulb className="w-6 h-6 text-blue-600" />
+                <h4 className="text-lg font-medium text-blue-900">AI-Powered Script Creation</h4>
+              </div>
+              <p className="text-blue-800 mb-4">
+                Our AI will analyze your product and target audience to create engaging, conversion-focused video scripts.
+              </p>
+              
+              <button
+                onClick={generateScript}
+                disabled={isGeneratingScript || !formData.product || !formData.targetAudience}
+                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              >
+                {isGeneratingScript ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generating Script...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Generate AI Script
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Manual Script Input */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Video Script (AI Generated or Manual)
+              </label>
+              <textarea
+                value={formData.script}
+                onChange={(e) => setFormData({ ...formData, script: e.target.value })}
+                placeholder="Your video script will appear here after AI generation, or you can write it manually..."
+                rows={8}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              />
+              <div className="mt-2 flex items-center justify-between text-sm text-gray-500">
+                <span>{formData.script.length} characters</span>
+                <span>Estimated duration: {Math.ceil(formData.script.length / 150)}s</span>
+              </div>
+            </div>
+          </div>
+        )
+
+      case 4:
+        return (
+          <div className="space-y-6">
+            <h3 className="text-xl font-semibold text-gray-900">Avatar & Voice Selection</h3>
+            
+            {/* Avatar Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Select AI Avatar *
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {avatarOptions.map((avatar) => (
+                  <button
+                    key={avatar.id}
+                    onClick={() => setFormData({ ...formData, selectedAvatar: avatar.id })}
+                    className={`p-4 border-2 rounded-lg text-center transition-all duration-200 ${
+                      formData.selectedAvatar === avatar.id
+                        ? 'border-purple-500 bg-purple-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="text-4xl mb-2">{avatar.thumbnail}</div>
+                    <p className="font-medium text-gray-900">{avatar.name}</p>
+                    <p className="text-sm text-gray-500">{avatar.style}</p>
+                    <p className="text-xs text-gray-400">{avatar.ethnicity}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Voice Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Select AI Voice *
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {voiceOptions.map((voice) => (
+                  <button
+                    key={voice.id}
+                    onClick={() => setFormData({ ...formData, selectedVoice: voice.id })}
+                    className={`p-4 border-2 rounded-lg text-center transition-all duration-200 ${
+                      formData.selectedVoice === voice.id
+                        ? 'border-purple-500 bg-purple-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="text-4xl mb-2">{voice.preview}</div>
+                    <p className="font-medium text-gray-900">{voice.name}</p>
+                    <p className="text-sm text-gray-500">{voice.tone}</p>
+                    <p className="text-xs text-gray-400">{voice.accent}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Generation Settings */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Video Generation Settings
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Duration (seconds)</label>
+                  <select
+                    value={formData.generationSettings.duration}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      generationSettings: {
+                        ...formData.generationSettings,
+                        duration: parseInt(e.target.value)
+                      }
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                  >
+                    <option value={15}>15s</option>
+                    <option value={30}>30s</option>
+                    <option value={60}>60s</option>
+                    <option value={90}>90s</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Quality</label>
+                  <select
+                    value={formData.generationSettings.quality}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      generationSettings: {
+                        ...formData.generationSettings,
+                        quality: e.target.value
+                      }
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                  >
+                    <option value="standard">Standard</option>
+                    <option value="high">High</option>
+                    <option value="premium">Premium</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Style</label>
+                  <select
+                    value={formData.generationSettings.style}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      generationSettings: {
+                        ...formData.generationSettings,
+                        style: e.target.value
+                      }
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                  >
+                    <option value="casual">Casual</option>
+                    <option value="professional">Professional</option>
+                    <option value="energetic">Energetic</option>
+                    <option value="calm">Calm</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+
+      case 5:
+        return (
+          <div className="space-y-6">
+            <h3 className="text-xl font-semibold text-gray-900">Generate Video</h3>
+            
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg border border-green-200">
+              <div className="flex items-center space-x-3 mb-4">
+                <Video className="w-6 h-6 text-green-600" />
+                <h4 className="text-lg font-medium text-green-900">Ready to Generate Your Video</h4>
+              </div>
+              
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span className="text-sm text-green-800">Script: {formData.script ? '✅ Ready' : '❌ Missing'}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span className="text-sm text-green-800">Avatar: {formData.selectedAvatar ? '✅ Selected' : '❌ Missing'}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span className="text-sm text-green-800">Voice: {formData.selectedVoice ? '✅ Selected' : '❌ Missing'}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span className="text-sm text-green-800">Settings: ✅ Configured</span>
+                </div>
+              </div>
+              
+              <button
+                onClick={generateVideo}
+                disabled={isGeneratingVideo || !formData.script || !formData.selectedAvatar || !formData.selectedVoice}
+                className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg hover:shadow-lg transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold"
+              >
+                {isGeneratingVideo ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Generating Video...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    Generate Video with HeyGen API
+                  </>
+                )}
+              </button>
+            </div>
+
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h5 className="font-medium text-gray-900 mb-2">What happens next?</h5>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>• Your script will be converted to speech using AI voices</li>
+                <li>• HeyGen API will generate avatar video with lip-sync</li>
+                <li>• Video will be optimized for your selected platforms</li>
+                <li>• You'll receive a preview for review and editing</li>
+              </ul>
+            </div>
+          </div>
+        )
+
+      case 6:
+        return (
+          <div className="space-y-6">
+            <h3 className="text-xl font-semibold text-gray-900">Preview & Edit</h3>
+            
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <div className="text-center">
+                <div className="w-32 h-32 bg-gray-200 rounded-lg mx-auto mb-4 flex items-center justify-center">
+                  <Video className="w-16 h-16 text-gray-400" />
+                </div>
+                <h4 className="text-lg font-medium text-gray-900 mb-2">Video Generation in Progress</h4>
+                <p className="text-gray-600 mb-4">Your video is being created. This may take a few minutes.</p>
+                <div className="flex items-center justify-center space-x-2">
+                  <Loader2 className="w-5 h-5 animate-spin text-purple-600" />
+                  <span className="text-sm text-gray-500">Processing...</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <h5 className="font-medium text-blue-900 mb-2">Next Steps</h5>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>• Wait for video generation to complete</li>
+                <li>• Preview and edit your video if needed</li>
+                <li>• Optimize for different platforms</li>
+                <li>• Schedule or publish your content</li>
+              </ul>
+            </div>
+          </div>
+        )
+
+      case 7:
+        return (
+          <div className="space-y-6">
+            <h3 className="text-xl font-semibold text-gray-900">Publish & Schedule</h3>
+            
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <div className="text-center">
+                <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
+                <h4 className="text-lg font-medium text-gray-900 mb-2">Video Ready!</h4>
+                <p className="text-gray-600 mb-6">Your AI-generated video is ready for publishing.</p>
+                
+                <div className="flex items-center justify-center space-x-4">
+                  <button className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                    <Eye className="w-4 h-4 mr-2" />
+                    Preview
+                  </button>
+                  <button className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">
+                    <Upload className="w-4 h-4 mr-2" />
+                    Publish Now
+                  </button>
+                  <button className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Schedule
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h5 className="font-medium text-gray-900 mb-2">Platform Optimization</h5>
+                <div className="space-y-2">
+                  {formData.platforms.map(platform => (
+                    <div key={platform} className="flex items-center space-x-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span className="text-sm text-gray-700">{platform}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h5 className="font-medium text-gray-900 mb-2">Analytics Tracking</h5>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <BarChart3 className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm text-gray-700">View counts</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Users className="w-4 h-4 text-green-600" />
+                    <span className="text-sm text-gray-700">Engagement rates</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Target className="w-4 h-4 text-purple-600" />
+                    <span className="text-sm text-gray-700">Conversion tracking</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+
+      default:
+        return null
+    }
   }
 
   return (
@@ -247,598 +823,108 @@ export default function NewCampaignPage() {
           </Link>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Create New UGC Campaign</h1>
-            <p className="text-gray-600 mt-1">Set up your User Generated Content video campaign and start creating authentic content</p>
+            <p className="text-gray-600 mt-1">Complete video generation workflow: Campaign → Script → Video → Publish</p>
           </div>
         </div>
       </div>
 
-      {/* Campaign Form */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-      >
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Campaign Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Campaign Name *
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="e.g., Summer Collection UGC Challenge"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-            />
+      {/* Progress Bar */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-700">Step {currentStep} of {totalSteps}</span>
+            <span className="text-sm text-gray-500">{Math.round((currentStep / totalSteps) * 100)}% Complete</span>
           </div>
-
-          {/* Campaign Type Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Campaign Type *
-            </label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {campaignTypes.map((type) => (
-                <label
-                  key={type.value}
-                  className={`relative flex items-start p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
-                    formData.type === type.value
-                      ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="type"
-                    value={type.value}
-                    checked={formData.type === type.value}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    className="sr-only"
-                  />
-                  <div className="flex items-start space-x-3">
-                    <div className={`w-12 h-12 bg-gradient-to-r ${type.color} rounded-lg flex items-center justify-center`}>
-                      <type.icon className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">{type.label}</p>
-                      <p className="text-sm text-gray-600">{type.description}</p>
-                    </div>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Description */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Campaign Description
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Describe your campaign goals, target audience, and the type of content you want to create..."
-              rows={4}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-            />
-          </div>
-
-          {/* Platform Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Target Platforms *
-            </label>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {platformOptions.map((platform) => (
-                <button
-                  key={platform.value}
-                  type="button"
-                  onClick={() => handlePlatformToggle(platform.value)}
-                  className={`p-3 border-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    formData.platforms.includes(platform.value)
-                      ? 'border-purple-500 bg-purple-50 text-purple-700'
-                      : 'border-gray-200 text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-center space-x-2">
-                    <span className="text-lg">{platform.icon}</span>
-                    <span>{platform.label}</span>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">{platform.description}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Video Format & Count */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Play className="w-4 h-4 inline mr-2" />
-                Video Format
-              </label>
-              <select
-                value={formData.videoFormat}
-                onChange={(e) => setFormData({ ...formData, videoFormat: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-              >
-                <option value="">Select video format</option>
-                {videoFormats.map((format) => (
-                  <option key={format.value} value={format.value}>
-                    {format.label} - {format.description}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Video className="w-4 h-4 inline mr-2" />
-                Number of Videos
-              </label>
-              <input
-                type="number"
-                value={formData.videoCount}
-                onChange={(e) => setFormData({ ...formData, videoCount: e.target.value })}
-                placeholder="e.g., 10"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-              />
-            </div>
-          </div>
-
-          {/* Target Audience & Budget */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Target className="w-4 h-4 inline mr-2" />
-                Target Audience
-              </label>
-              <input
-                type="text"
-                value={formData.targetAudience}
-                onChange={(e) => setFormData({ ...formData, targetAudience: e.target.value })}
-                placeholder="e.g., Fashion enthusiasts, 18-35 years old"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <DollarSign className="w-4 h-4 inline mr-2" />
-                Campaign Budget
-              </label>
-              <input
-                type="number"
-                value={formData.budget}
-                onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                placeholder="e.g., 5000"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-              />
-            </div>
-          </div>
-
-          {/* Campaign Dates */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Calendar className="w-4 h-4 inline mr-2" />
-                Start Date
-              </label>
-              <input
-                type="date"
-                value={formData.startDate}
-                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Calendar className="w-4 h-4 inline mr-2" />
-                End Date
-              </label>
-              <input
-                type="date"
-                value={formData.endDate}
-                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-              />
-            </div>
-          </div>
-
-          {/* Hashtags & CTA */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <TrendingUp className="w-4 h-4 inline mr-2" />
-                Campaign Hashtags
-              </label>
-              <input
-                type="text"
-                value={formData.hashtags}
-                onChange={(e) => setFormData({ ...formData, hashtags: e.target.value })}
-                placeholder="e.g., #SummerStyle #UGCCampaign #FashionForward"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Share2 className="w-4 h-4 inline mr-2" />
-                Call to Action
-              </label>
-              <input
-                type="text"
-                value={formData.callToAction}
-                onChange={(e) => setFormData({ ...formData, callToAction: e.target.value })}
-                placeholder="e.g., Share your video with #SummerStyle"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-              />
-            </div>
-          </div>
-
-          {/* Form Actions */}
-          <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
-            <Link
-              href="/dashboard/campaigns"
-              className="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium"
-            >
-              Cancel
-            </Link>
-            <button
-              type="submit"
-              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              Create UGC Campaign
-            </button>
-          </div>
-        </form>
-      </motion.div>
-
-      {/* AI Studio Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">AI Studio</h2>
-            <p className="text-gray-600 mt-1">Creative control center for prompts, avatars, voices, and templates</p>
-          </div>
-          <div className="flex items-center space-x-3">
-            <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200">
-              <History className="w-4 h-4 mr-2 inline" />
-              History
-            </button>
-            <button 
-              onClick={() => setShowAIStudio(!showAIStudio)}
-              className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold"
-            >
-              <Sparkles className="w-4 h-4 mr-2 inline" />
-              {showAIStudio ? 'Hide AI Studio' : 'Generate Video'}
-            </button>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+            ></div>
           </div>
         </div>
 
-        {showAIStudio && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="space-y-6"
-          >
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              {/* Left Panel - Prompt Library */}
-              <div className="lg:col-span-1">
-                <div className="bg-gray-50 rounded-xl border border-gray-200 p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Prompt Library</h3>
-                    <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
-                      <Plus className="w-4 h-4" />
-                    </button>
-                  </div>
+        <div className="flex items-center justify-between text-xs text-gray-500">
+          <span>Campaign Setup</span>
+          <span>Product & Platform</span>
+          <span>AI Script</span>
+          <span>Avatar & Voice</span>
+          <span>Generate Video</span>
+          <span>Preview & Edit</span>
+          <span>Publish</span>
+        </div>
+      </div>
 
-                  {/* Search & Filter */}
-                  <div className="mb-4">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <input
-                        type="text"
-                        placeholder="Search templates..."
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      />
-                    </div>
-                  </div>
+      {/* Step Requirements */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-center space-x-2 mb-2">
+          <CheckCircle className="w-5 h-5 text-blue-600" />
+          <h4 className="font-medium text-blue-900">Step {currentStep} Requirements</h4>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {getStepRequirements().map((requirement, index) => (
+            <span key={index} className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+              {requirement}
+            </span>
+          ))}
+        </div>
+        <div className="mt-2 text-xs text-blue-700">
+          <strong>Debug:</strong> Can proceed: {canProceedToNextStep() ? 'Yes' : 'No'} | 
+          Current step: {currentStep} | 
+          Total steps: {totalSteps}
+        </div>
+      </div>
 
-                  {/* Categories */}
-                  <div className="mb-4">
-                    <select className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                      <option value="">All Categories</option>
-                      <option value="testimonial">Testimonial</option>
-                      <option value="demo">Demo</option>
-                      <option value="pain-agitate-solve">Pain-Agitate-Solve</option>
-                      <option value="comparison">Comparison</option>
-                      <option value="cta">CTA</option>
-                    </select>
-                  </div>
-
-                  {/* Templates List */}
-                  <div className="space-y-3">
-                    {promptTemplates.map((template) => (
-                      <div
-                        key={template.id}
-                        onClick={() => setSelectedTemplate(template.id)}
-                        className={`p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
-                          selectedTemplate === template.id
-                            ? 'border-purple-500 bg-purple-50'
-                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <h4 className="font-medium text-gray-900 text-sm">{template.name}</h4>
-                          <div className="flex items-center space-x-1">
-                            {template.isFavorite && (
-                              <Heart className="w-4 h-4 text-red-500 fill-current" />
-                            )}
-                            {template.isShared && (
-                              <ShareIcon className="w-4 h-4 text-blue-500" />
-                            )}
-                          </div>
-                        </div>
-                        <p className="text-xs text-gray-600 mb-2">{template.description}</p>
-                        <div className="flex items-center justify-between text-xs text-gray-500">
-                          <span>{template.usage} uses</span>
-                          <span>★ {template.rating}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Center Panel - Script Editor */}
-              <div className="lg:col-span-2">
-                <div className="bg-gray-50 rounded-xl border border-gray-200 p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Script Editor</h3>
-                    <div className="flex items-center space-x-2">
-                      <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
-                        <Save className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
-                        <History className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Script Input */}
-                  <div className="mb-6">
-                    <textarea
-                      value={script}
-                      onChange={(e) => setScript(e.target.value)}
-                      placeholder="Write your script here... The AI will help you create compelling content that converts."
-                      className="w-full h-48 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                    />
-                  </div>
-
-                  {/* Script Stats */}
-                  <div className="flex items-center justify-between text-sm text-gray-600 mb-6">
-                    <div className="flex items-center space-x-4">
-                      <span>{characterCount} characters</span>
-                      <span>•</span>
-                      <span>~{estimatedDuration}s estimated</span>
-                    </div>
-                    <button className="text-purple-600 hover:text-purple-700 font-medium">
-                      Auto-generate script
-                    </button>
-                  </div>
-
-                  {/* Tone Controls */}
-                  <div className="mb-6">
-                    <h4 className="font-medium text-gray-900 mb-3">Tone Adjustment</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-2">Excited ↔ Calm</label>
-                        <input
-                          type="range"
-                          min="0"
-                          max="100"
-                          value={toneSettings.excited}
-                          onChange={(e) => setToneSettings({...toneSettings, excited: parseInt(e.target.value)})}
-                          className="w-full"
-                        />
-                        <div className="flex justify-between text-xs text-gray-500 mt-1">
-                          <span>Calm</span>
-                          <span>Excited</span>
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-2">Formal ↔ Conversational</label>
-                        <input
-                          type="range"
-                          min="0"
-                          max="100"
-                          value={toneSettings.formal}
-                          onChange={(e) => setToneSettings({...toneSettings, formal: parseInt(e.target.value)})}
-                          className="w-full"
-                        />
-                        <div className="flex justify-between text-xs text-gray-500 mt-1">
-                          <span>Conversational</span>
-                          <span>Formal</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Advanced Options */}
-                  <div className="border-t border-gray-200 pt-4">
-                    <button
-                      onClick={() => setShowAdvanced(!showAdvanced)}
-                      className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900"
-                    >
-                      {showAdvanced ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                      <span>Advanced Options</span>
-                    </button>
-                    
-                    {showAdvanced && (
-                      <div className="mt-4 space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <label className="flex items-center space-x-3">
-                            <input type="checkbox" className="rounded border-gray-300 text-purple-600 focus:ring-purple-500" />
-                            <span className="text-sm text-gray-700">Humanize speech</span>
-                          </label>
-                          <label className="flex items-center space-x-3">
-                            <input type="checkbox" className="rounded border-gray-300 text-purple-600 focus:ring-purple-500" />
-                            <span className="text-sm text-gray-700">Profanity check</span>
-                          </label>
-                        </div>
-                        <div>
-                          <label className="block text-sm text-gray-600 mb-2">Estimated cost per video</label>
-                          <div className="text-lg font-semibold text-green-600">$0.15 - $0.25</div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Panel - Avatar & Voice */}
-              <div className="lg:col-span-1 space-y-6">
-                {/* Avatar Selection */}
-                <div className="bg-gray-50 rounded-xl border border-gray-200 p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Avatar</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {avatars.map((avatar) => (
-                      <div
-                        key={avatar.id}
-                        onClick={() => setSelectedAvatar(avatar.id)}
-                        className={`p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
-                          selectedAvatar === avatar.id
-                            ? 'border-purple-500 bg-purple-50'
-                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className="w-12 h-12 bg-gray-200 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                          <Users className="w-6 h-6 text-gray-400" />
-                        </div>
-                        <h4 className="font-medium text-gray-900 text-sm text-center">{avatar.name}</h4>
-                        <p className="text-xs text-gray-500 text-center">{avatar.style}</p>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <button className="w-full flex items-center justify-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Upload Custom Avatar
-                    </button>
-                  </div>
-                </div>
-
-                {/* Voice Selection */}
-                <div className="bg-gray-50 rounded-xl border border-gray-200 p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Voice</h3>
-                  <div className="space-y-3">
-                    {voices.map((voice) => (
-                      <div
-                        key={voice.id}
-                        onClick={() => setSelectedVoice(voice.id)}
-                        className={`p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
-                          selectedVoice === voice.id
-                            ? 'border-purple-500 bg-purple-50'
-                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-medium text-gray-900 text-sm">{voice.name}</h4>
-                            <p className="text-xs text-gray-500">{voice.accent} • {voice.tone}</p>
-                          </div>
-                          <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
-                            <Volume2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <button className="w-full flex items-center justify-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200">
-                      <Mic className="w-4 h-4 mr-2" />
-                      Clone Voice
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Preview Pane */}
-            <div className="bg-gray-50 rounded-xl border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Preview</h3>
-                <div className="flex items-center space-x-3">
-                  <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200">
-                    <RotateCcw className="w-4 h-4 mr-2 inline" />
-                    Regenerate
-                  </button>
-                  <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200">
-                    <Download className="w-4 h-4 mr-2 inline" />
-                    Download
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Audio Preview */}
-                <div className="lg:col-span-1">
-                  <h4 className="font-medium text-gray-900 mb-3">Audio Preview</h4>
-                  <div className="bg-white rounded-lg p-4 text-center">
-                    <button
-                      onClick={() => setIsPlaying(!isPlaying)}
-                      className="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center hover:bg-purple-700 transition-colors duration-200"
-                    >
-                      {isPlaying ? <Play className="w-6 h-6" /> : <Play className="w-6 h-6" />}
-                    </button>
-                    <p className="text-sm text-gray-600 mt-2">Click to preview TTS audio</p>
-                  </div>
-                </div>
-
-                {/* Video Preview */}
-                <div className="lg:col-span-2">
-                  <h4 className="font-medium text-gray-900 mb-3">Video Preview</h4>
-                  <div className="bg-white rounded-lg p-8 text-center">
-                    <div className="w-32 h-32 bg-gray-200 rounded-lg mx-auto mb-4 flex items-center justify-center">
-                      <Play className="w-12 h-12 text-gray-400" />
-                    </div>
-                    <p className="text-sm text-gray-600">Lip-synced avatar preview</p>
-                    <p className="text-xs text-gray-500 mt-1">Low-res fast preview</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Variation Slider */}
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <h4 className="font-medium text-gray-900 mb-3">Variation Control</h4>
-                <div className="flex items-center space-x-4">
-                  <span className="text-sm text-gray-600">Small changes</span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    defaultValue="50"
-                    className="flex-1"
-                  />
-                  <span className="text-sm text-gray-600">Large changes</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
+      {/* Step Content */}
+      <motion.div
+        key={currentStep}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3 }}
+        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+      >
+        {renderStepContent()}
       </motion.div>
+
+      {/* Navigation */}
+      <div className="flex items-center justify-between bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <button
+          onClick={prevStep}
+          disabled={currentStep === 1}
+          className="inline-flex items-center px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+        >
+          Previous
+        </button>
+
+        <div className="flex items-center space-x-3">
+          {currentStep === totalSteps ? (
+            <button
+              onClick={handleSubmit}
+              disabled={isLoading}
+              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating Campaign...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Create Campaign & Publish Video
+                </>
+              )}
+            </button>
+          ) : (
+            <button
+              onClick={nextStep}
+              disabled={!canProceedToNextStep()}
+              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next Step
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

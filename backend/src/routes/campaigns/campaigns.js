@@ -169,19 +169,24 @@ router.post('/', async (req, res) => {
     const {
       name,
       type,
-      platform,
+      platforms,
+      videoFormat,
       targetAudience,
       budget,
       description,
+      hashtags,
+      callToAction,
+      startDate,
+      endDate,
       tags,
       settings
     } = req.body;
     
     // Validation
-    if (!name || !type || !platform) {
+    if (!name || !type || !platforms || !Array.isArray(platforms)) {
       return res.status(400).json({
         error: 'Validation error',
-        message: 'Name, type, and platform are required'
+        message: 'Name, type, and platforms array are required'
       });
     }
     
@@ -195,11 +200,15 @@ router.post('/', async (req, res) => {
       totalViews: 0,
       engagement: 0,
       watchTime: 0,
-      platform,
-      createdAt: new Date().toISOString().split('T')[0],
+      platforms,
+      videoFormat: videoFormat || 'short-form',
       targetAudience: targetAudience || 'General audience',
       budget: budget || 0,
       description: description || '',
+      hashtags: hashtags || '',
+      callToAction: callToAction || '',
+      startDate: startDate || null,
+      endDate: endDate || null,
       tags: tags || [],
       settings: {
         autoApprove: false,

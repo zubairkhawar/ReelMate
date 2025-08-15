@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { 
   MessageSquare, 
   Plus, 
@@ -24,7 +25,10 @@ import {
   Lightbulb,
   BookOpen,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Video,
+  Users,
+  Mic as MicIcon
 } from 'lucide-react'
 
 interface Message {
@@ -172,7 +176,6 @@ Would you like me to elaborate on any of these aspects or help you with somethin
         ...prev,
         messages: [...prev.messages, aiMessage]
       }))
-      setIsLoading(false)
     }, 2000)
   }
 
@@ -344,7 +347,7 @@ Would you like me to elaborate on any of these aspects or help you with somethin
                             message.feedback === 'negative' 
                               ? 'text-red-500' 
                               : 'hover:bg-black/10'
-                          }`}
+                            }`}
                           title="Thumbs down"
                         >
                           <ThumbsDown className="w-3 h-3" />

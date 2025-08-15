@@ -205,7 +205,7 @@ export default function DashboardPage() {
         onCompareToggle={handleCompareToggle}
       />
 
-      {/* Enhanced KPI Cards */}
+        {/* Enhanced KPI Cards */}
       <KPICards />
 
       {/* Enhanced Chart Area */}

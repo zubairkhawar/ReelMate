@@ -19,6 +19,8 @@ const shopifyRoutes = require('./routes/shopify/shopify');
 const ugcRoutes = require('./routes/ugc/ugc');
 const analyticsRoutes = require('./routes/analytics/analytics');
 const campaignsRoutes = require('./routes/campaigns/campaigns');
+const aiStudioRoutes = require('./routes/ai-studio/ai-studio');
+const youtubeRoutes = require('./routes/youtube/youtube');
 
 // Security middleware
 app.use(helmet({
@@ -82,6 +84,8 @@ app.use('/api/shopify', shopifyRoutes);
 app.use('/api/ugc', ugcRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/campaigns', campaignsRoutes);
+app.use('/api/ai-studio', aiStudioRoutes);
+app.use('/api/youtube', youtubeRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
