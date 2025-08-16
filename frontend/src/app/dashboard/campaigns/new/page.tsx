@@ -31,6 +31,13 @@ import {
   Facebook,
   Twitter
 } from 'lucide-react'
+import { 
+  TikTokLogo, 
+  InstagramLogo, 
+  YouTubeLogo, 
+  FacebookLogo, 
+  MultiPlatformLogo 
+} from '../../../../components/logos'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -45,11 +52,11 @@ const campaignTypes = [
 ]
 
 const platformOptions = [
-  { value: 'tiktok', label: 'TikTok', icon: '🎵', description: 'Short-form vertical videos', color: 'from-pink-500 to-purple-600' },
-  { value: 'instagram', label: 'Instagram', icon: '📷', description: 'Reels and IGTV content', color: 'from-purple-500 to-pink-600' },
-  { value: 'youtube', label: 'YouTube', icon: '▶️', description: 'Long-form video content', color: 'from-red-500 to-red-600' },
-  { value: 'facebook', label: 'Facebook', icon: '📘', description: 'Social media video posts', color: 'from-blue-500 to-blue-600' },
-  { value: 'multi-platform', label: 'Multi-Platform', icon: '🌐', description: 'Cross-platform distribution', color: 'from-gray-500 to-gray-600' }
+  { value: 'tiktok', label: 'TikTok', icon: TikTokLogo, description: 'Short-form vertical videos', color: 'from-pink-500 to-purple-600' },
+  { value: 'instagram', label: 'Instagram', icon: InstagramLogo, description: 'Reels and IGTV content', color: 'from-purple-500 to-pink-600' },
+  { value: 'youtube', label: 'YouTube', icon: YouTubeLogo, description: 'Long-form video content', color: 'from-red-500 to-red-600' },
+  { value: 'facebook', label: 'Facebook', icon: FacebookLogo, description: 'Social media video posts', color: 'from-blue-500 to-blue-600' },
+  { value: 'multi-platform', label: 'Multi-Platform', icon: MultiPlatformLogo, description: 'Cross-platform distribution', color: 'from-gray-500 to-gray-600' }
 ]
 
 const videoFormats = [
@@ -428,10 +435,10 @@ export default function NewCampaignPage() {
                         : 'border-gray-200 text-gray-700 hover:border-gray-300'
                     }`}
                   >
-                    <div className="flex items-center space-x-2">
-                      <span className="text-lg">{platform.icon}</span>
-                      <span>{platform.label}</span>
-                    </div>
+                                      <div className="flex items-center space-x-2">
+                    <platform.icon className="w-5 h-5" />
+                    <span>{platform.label}</span>
+                  </div>
                     <p className="text-xs text-gray-500 mt-1">{platform.description}</p>
                   </button>
                 ))}

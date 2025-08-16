@@ -11,6 +11,12 @@ import {
   MousePointer,
   ShoppingCart
 } from 'lucide-react'
+import { 
+  TikTokLogo, 
+  InstagramLogo, 
+  FacebookLogo, 
+  MultiPlatformLogo 
+} from '../logos'
 
 interface PerformanceControlsProps {
   onDateRangeChange: (range: string) => void
@@ -51,10 +57,10 @@ const PerformanceControls = ({
   }
 
   const platforms = [
-    { id: 'all', name: 'All Platforms', icon: '🌐' },
-    { id: 'tiktok', name: 'TikTok', icon: '🎵' },
-    { id: 'instagram', name: 'Instagram', icon: '📷' },
-    { id: 'facebook', name: 'Facebook', icon: '📘' }
+    { id: 'all', name: 'All Platforms', icon: MultiPlatformLogo },
+    { id: 'tiktok', name: 'TikTok', icon: TikTokLogo },
+    { id: 'instagram', name: 'Instagram', icon: InstagramLogo },
+    { id: 'facebook', name: 'Facebook', icon: FacebookLogo }
   ]
 
   const metrics = [
@@ -121,7 +127,9 @@ const PerformanceControls = ({
                     : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
                 }`}
               >
-                <span className="mr-1">{platform.icon}</span>
+                <span className="mr-1">
+                  <platform.icon className="w-4 h-4" />
+                </span>
                 {platform.name}
               </button>
             ))}

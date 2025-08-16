@@ -16,6 +16,13 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-react'
+import { 
+  TikTokLogo, 
+  InstagramLogo, 
+  YouTubeLogo, 
+  FacebookLogo, 
+  MultiPlatformLogo 
+} from '../logos'
 import Link from 'next/link'
 
 interface Campaign {
@@ -115,15 +122,15 @@ const RecentCampaigns = ({ campaigns }: RecentCampaignsProps) => {
   const getPlatformIcon = (platform: string) => {
     switch (platform) {
       case 'tiktok':
-        return '🎵'
+        return <TikTokLogo className="w-4 h-4" />
       case 'instagram':
-        return '📷'
+        return <InstagramLogo className="w-4 h-4" />
       case 'youtube':
-        return '▶️'
+        return <YouTubeLogo className="w-4 h-4" />
       case 'facebook':
-        return '📘'
+        return <FacebookLogo className="w-4 h-4" />
       default:
-        return '🌐'
+        return <MultiPlatformLogo className="w-4 h-4" />
     }
   }
 

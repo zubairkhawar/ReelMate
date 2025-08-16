@@ -1,0 +1,5 @@
+export { default as TikTokLogo } from './TikTokLogo'
+export { default as InstagramLogo } from './InstagramLogo'
+export { default as YouTubeLogo } from './YouTubeLogo'
+export { default as FacebookLogo } from './FacebookLogo'
+export { default as MultiPlatformLogo } from './MultiPlatformLogo'

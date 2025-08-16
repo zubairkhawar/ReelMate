@@ -30,6 +30,13 @@ import {
   Target,
   ThumbsUp
 } from 'lucide-react'
+import { 
+  TikTokLogo, 
+  InstagramLogo, 
+  YouTubeLogo, 
+  FacebookLogo, 
+  MultiPlatformLogo 
+} from '../../../components/logos'
 import Link from 'next/link'
 
 interface Campaign {
@@ -128,11 +135,11 @@ const statusConfig = {
 }
 
 const platformConfig = {
-  tiktok: { label: 'TikTok', icon: '🎵', color: 'bg-black text-white border-black' },
-  instagram: { label: 'Instagram', icon: '📷', color: 'bg-pink-100 text-pink-800 border-pink-200' },
-  youtube: { label: 'YouTube', icon: '▶️', color: 'bg-red-100 text-red-800 border-red-200' },
-  facebook: { label: 'Facebook', icon: '📘', color: 'bg-blue-100 text-blue-800 border-blue-200' },
-  'multi-platform': { label: 'Multi-Platform', icon: '🌐', color: 'bg-gray-100 text-gray-800 border-gray-200' }
+  tiktok: { label: 'TikTok', icon: TikTokLogo, color: 'bg-black text-white border-black' },
+  instagram: { label: 'Instagram', icon: InstagramLogo, color: 'bg-pink-100 text-pink-800 border-pink-200' },
+  youtube: { label: 'YouTube', icon: YouTubeLogo, color: 'bg-red-100 text-red-800 border-red-200' },
+  facebook: { label: 'Facebook', icon: FacebookLogo, color: 'bg-blue-100 text-blue-800 border-blue-200' },
+  'multi-platform': { label: 'Multi-Platform', icon: MultiPlatformLogo, color: 'bg-gray-100 text-gray-800 border-gray-200' }
 }
 
 export default function CampaignsPage() {
@@ -209,7 +216,11 @@ export default function CampaignsPage() {
 
   const getPlatformIcon = (platform: string) => {
     const config = platformConfig[platform as keyof typeof platformConfig]
-    return config ? config.icon : '🌐'
+    if (config && config.icon) {
+      const IconComponent = config.icon
+      return <IconComponent className="w-4 h-4" />
+    }
+    return <MultiPlatformLogo className="w-4 h-4" />
   }
 
   const formatNumber = (num: number) => {
