@@ -38,6 +38,9 @@ import {
   FacebookLogo, 
   MultiPlatformLogo 
 } from '../../../../components/logos'
+import { useHeyGen } from '../../../../hooks/useHeyGen'
+import AvatarSelector from '../../../../components/dashboard/AvatarSelector'
+import VoiceSelector from '../../../../components/dashboard/VoiceSelector'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -66,22 +69,11 @@ const videoFormats = [
   { value: 'landscape-4-5', label: 'Landscape (4:5)', description: 'Instagram feed posts, Facebook stories', icon: '📐' }
 ]
 
-const avatarOptions = [
-  { id: '550e8400-e29b-41d4-a716-446655440001', name: 'Sarah', gender: 'Female', ethnicity: 'Caucasian', style: 'Professional', thumbnail: '👩‍💼' },
-  { id: '550e8400-e29b-41d4-a716-446655440002', name: 'Marcus', gender: 'Male', ethnicity: 'African American', style: 'Casual', thumbnail: '👨‍💻' },
-  { id: '550e8400-e29b-41d4-a716-446655440003', name: 'Priya', gender: 'Female', ethnicity: 'South Asian', style: 'Friendly', thumbnail: '👩‍🎓' },
-  { id: '550e8400-e29b-41d4-a716-446655440004', name: 'Alex', gender: 'Male', ethnicity: 'Hispanic', style: 'Energetic', thumbnail: '👨‍🎤' }
-]
-
-const voiceOptions = [
-  { id: '550e8400-e29b-41d4-a716-446655440005', name: 'Emma', gender: 'Female', accent: 'US English', tone: 'Warm & Friendly', preview: '🎤' },
-  { id: '550e8400-e29b-41d4-a716-446655440006', name: 'James', gender: 'Male', accent: 'British', tone: 'Professional', preview: '🎤' },
-  { id: '550e8400-e29b-41d4-a716-446655440007', name: 'Sophia', gender: 'Female', accent: 'Australian', tone: 'Casual', preview: '🎤' },
-  { id: '550e8400-e29b-41d4-a716-446655440008', name: 'Michael', gender: 'Male', accent: 'US English', tone: 'Energetic', preview: '🎤' }
-]
+// Avatar and voice options are now fetched from HeyGen API
 
 export default function NewCampaignPage() {
   const router = useRouter()
+  const { avatars, voices, loading: heygenLoading, playVoiceSample, generateVideo: heygenGenerateVideo } = useHeyGen()
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState({
     name: '',
@@ -170,7 +162,7 @@ export default function NewCampaignPage() {
       return
     }
 
-    console.log('Generating video with:', {
+    console.log('Generating video with HeyGen:', {
       script: formData.script,
       avatarId: formData.selectedAvatar,
       voiceId: formData.selectedVoice,
@@ -179,31 +171,25 @@ export default function NewCampaignPage() {
 
     setIsGeneratingVideo(true)
     try {
-      const response = await fetch(`${API_BASE}/ai-studio/generate-video`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          script: formData.script,
-          avatarId: formData.selectedAvatar,
-          voiceId: formData.selectedVoice,
-          generationSettings: formData.generationSettings
-        })
+      // Use HeyGen service to generate video
+      const result = await heygenGenerateVideo({
+        script: formData.script,
+        avatarId: formData.selectedAvatar,
+        voiceId: formData.selectedVoice,
+        settings: {
+          duration: formData.generationSettings.duration,
+          quality: formData.generationSettings.quality,
+          style: formData.generationSettings.style
+        }
       })
 
-      if (response.ok) {
-        const data = await response.json()
-        setGeneratedVideo(data)
-        alert('Video generation started successfully!')
-        nextStep()
-      } else {
-        const error = await response.json()
-        alert(`Error: ${error.message || 'Failed to start video generation'}`)
-      }
+      console.log('HeyGen video generation started:', result)
+      setGeneratedVideo({ jobId: result.jobId, status: result.status })
+      alert('Video generation started successfully with HeyGen!')
+      nextStep()
     } catch (error) {
-      console.error('Error generating video:', error)
-      alert('Failed to start video generation')
+      console.error('Error generating video with HeyGen:', error)
+      alert('Failed to start video generation. Please try again.')
     } finally {
       setIsGeneratingVideo(false)
     }
@@ -545,24 +531,12 @@ export default function NewCampaignPage() {
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 Select AI Avatar *
               </label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {avatarOptions.map((avatar) => (
-                  <button
-                    key={avatar.id}
-                    onClick={() => setFormData({ ...formData, selectedAvatar: avatar.id })}
-                    className={`p-4 border-2 rounded-lg text-center transition-all duration-200 ${
-                      formData.selectedAvatar === avatar.id
-                        ? 'border-purple-500 bg-purple-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="text-4xl mb-2">{avatar.thumbnail}</div>
-                    <p className="font-medium text-gray-900">{avatar.name}</p>
-                    <p className="text-sm text-gray-500">{avatar.style}</p>
-                    <p className="text-xs text-gray-400">{avatar.ethnicity}</p>
-                  </button>
-                ))}
-              </div>
+              <AvatarSelector
+                avatars={avatars}
+                selectedAvatar={formData.selectedAvatar}
+                onAvatarSelect={(avatarId) => setFormData({ ...formData, selectedAvatar: avatarId })}
+                loading={heygenLoading}
+              />
             </div>
 
             {/* Voice Selection */}
@@ -570,24 +544,13 @@ export default function NewCampaignPage() {
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 Select AI Voice *
               </label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {voiceOptions.map((voice) => (
-                  <button
-                    key={voice.id}
-                    onClick={() => setFormData({ ...formData, selectedVoice: voice.id })}
-                    className={`p-4 border-2 rounded-lg text-center transition-all duration-200 ${
-                      formData.selectedVoice === voice.id
-                        ? 'border-purple-500 bg-purple-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="text-4xl mb-2">{voice.preview}</div>
-                    <p className="font-medium text-gray-900">{voice.name}</p>
-                    <p className="text-sm text-gray-500">{voice.tone}</p>
-                    <p className="text-xs text-gray-400">{voice.accent}</p>
-                  </button>
-                ))}
-              </div>
+              <VoiceSelector
+                voices={voices}
+                selectedVoice={formData.selectedVoice}
+                onVoiceSelect={(voiceId) => setFormData({ ...formData, selectedVoice: voiceId })}
+                onPlaySample={playVoiceSample}
+                loading={heygenLoading}
+              />
             </div>
 
             {/* Generation Settings */}
