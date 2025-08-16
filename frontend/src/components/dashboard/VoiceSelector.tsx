@@ -1,192 +1,191 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Mic, Play, Pause, Volume2, Sparkles, Loader2, AlertCircle } from 'lucide-react'
-import { HeyGenVoice } from '../../services/heygenService'
+import { Volume2, Play, Pause, Loader2 } from 'lucide-react'
+import { AIVideoVoice } from '../../services/aiVideoService'
 
 interface VoiceSelectorProps {
-  voices: HeyGenVoice[]
+  voices: AIVideoVoice[]
   selectedVoice: string
   onVoiceSelect: (voiceId: string) => void
-  onPlaySample: (voiceId: string) => void
-  loading?: boolean
+  onPlaySample: (voiceId: string) => Promise<void>
+  loading: boolean
 }
 
-export default function VoiceSelector({ 
-  voices, 
-  selectedVoice, 
-  onVoiceSelect, 
-  onPlaySample, 
-  loading = false 
+export default function VoiceSelector({
+  voices,
+  selectedVoice,
+  onVoiceSelect,
+  onPlaySample,
+  loading
 }: VoiceSelectorProps) {
   const [playingVoice, setPlayingVoice] = useState<string | null>(null)
   const [audioError, setAudioError] = useState<string | null>(null)
 
   const handlePlaySample = async (voiceId: string) => {
     try {
-      setAudioError(null)
       setPlayingVoice(voiceId)
+      setAudioError(null)
+      await onPlaySample(voiceId)
       
-      // Create audio element for better control
-      const audio = new Audio()
-      audio.src = voices.find(v => v.id === voiceId)?.sample_url || ''
-      
-      audio.onended = () => setPlayingVoice(null)
-      audio.onerror = () => {
+      // Stop playing after a few seconds
+      setTimeout(() => {
         setPlayingVoice(null)
-        setAudioError('Failed to play voice sample')
-      }
-      
-      await audio.play()
-      onPlaySample(voiceId)
+      }, 3000)
     } catch (error) {
-      setPlayingVoice(null)
-      setAudioError('Failed to play voice sample')
       console.error('Error playing voice sample:', error)
+      setAudioError('Failed to play voice sample')
+      setPlayingVoice(null)
     }
   }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
-        <span className="ml-2 text-gray-600">Loading voices...</span>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="animate-pulse">
+            <div className="w-full h-24 bg-gray-200 rounded-lg mb-2"></div>
+            <div className="h-3 bg-gray-200 rounded w-1/2 mb-1"></div>
+            <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  if (voices.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <Volume2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+        <p className="text-gray-500">No voices available</p>
+        <p className="text-sm text-gray-400">Please check your API configuration</p>
       </div>
     )
   }
 
   return (
     <div className="space-y-4">
-      {/* Voice Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         {voices.map((voice) => (
-          <motion.button
+          <motion.div
             key={voice.id}
-            onClick={() => onVoiceSelect(voice.id)}
-            className={`relative group p-4 border-2 rounded-xl text-left transition-all duration-200 ${
+            className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all duration-200 ${
               selectedVoice === voice.id
-                ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200'
-                : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+                ? 'border-purple-500 ring-2 ring-purple-200'
+                : 'border-gray-200 hover:border-gray-300'
             }`}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
+            onClick={() => onVoiceSelect(voice.id)}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
-            {/* Voice Header */}
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
-                  <Mic className="w-6 h-6 text-purple-600" />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">{voice.name}</p>
-                  <p className="text-sm text-gray-600">{voice.tone}</p>
+            {/* Voice Card */}
+            <div className="p-4 bg-white">
+              {/* Voice Icon */}
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center mb-3">
+                <Volume2 className="w-6 h-6 text-blue-600" />
+              </div>
+
+              {/* Voice Info */}
+              <div className="space-y-2">
+                <h4 className="font-medium text-gray-900 text-sm">{voice.name}</h4>
+                <div className="space-y-1 text-xs text-gray-500">
+                  <p>{voice.gender} • {voice.accent}</p>
+                  <p>{voice.language} • {voice.tone}</p>
                 </div>
               </div>
-              
-              {/* Selection Indicator */}
-              {selectedVoice === voice.id && (
-                <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
-                  <Sparkles className="w-3 h-3 text-white" />
-                </div>
-              )}
-            </div>
 
-            {/* Voice Details */}
-            <div className="space-y-2 mb-3">
-              <div className="flex items-center space-x-4 text-xs text-gray-500">
-                <span className="flex items-center">
-                  <Volume2 className="w-3 h-3 mr-1" />
-                  {voice.accent}
-                </span>
-                <span>•</span>
-                <span>{voice.language}</span>
-                <span>•</span>
-                <span>{voice.gender}</span>
+              {/* Play Button */}
+              <div className="mt-3">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handlePlaySample(voice.id)
+                  }}
+                  disabled={!voice.sample_url}
+                  className={`w-full inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                    voice.sample_url
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 shadow-md hover:shadow-lg transform hover:scale-105'
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  {playingVoice === voice.id ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      Playing...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-4 h-4 mr-2" />
+                      Play Sample
+                    </>
+                  )}
+                </button>
               </div>
-              
-              {voice.metadata && (
-                <div className="flex items-center space-x-4 text-xs text-gray-400">
-                  {voice.metadata.age && <span>Age: {voice.metadata.age}</span>}
-                  {voice.metadata.emotion && <span>Emotion: {voice.metadata.emotion}</span>}
-                  {voice.metadata.speed && <span>Speed: {voice.metadata.speed}</span>}
-                </div>
-              )}
             </div>
 
-            {/* Play Sample Button */}
-            <div className="flex items-center justify-between">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handlePlaySample(voice.id)
-                }}
-                disabled={!voice.sample_url}
-                className={`inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg transition-colors duration-200 ${
-                  voice.sample_url
-                    ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                {playingVoice === voice.id ? (
-                  <>
-                    <Pause className="w-3 h-3 mr-1" />
-                    Playing...
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-3 h-3 mr-1" />
-                    Play Sample
-                  </>
-                )}
-              </button>
-              
-              {!voice.sample_url && (
-                <span className="text-xs text-gray-400">No sample available</span>
-              )}
-            </div>
-          </motion.button>
+            {/* Selection Indicator */}
+            {selectedVoice === voice.id && (
+              <div className="absolute top-2 right-2 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
+                <div className="w-2 h-2 bg-white rounded-full"></div>
+              </div>
+            )}
+          </motion.div>
         ))}
       </div>
 
-      {/* Audio Error Message */}
+      {/* Error Message */}
       {audioError && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center space-x-2"
-        >
-          <AlertCircle className="w-4 h-4 text-red-600" />
-          <span className="text-sm text-red-700">{audioError}</span>
-        </motion.div>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+          <p className="text-sm text-red-700">{audioError}</p>
+        </div>
       )}
 
       {/* Selected Voice Details */}
       {selectedVoice && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-purple-50 border border-purple-200 rounded-lg p-4"
-        >
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
-              <Mic className="w-6 h-6 text-purple-600" />
-            </div>
-            <div className="flex-1">
-              <p className="font-medium text-purple-900">
-                {voices.find(v => v.id === selectedVoice)?.name}
-              </p>
-              <p className="text-sm text-purple-700">
-                {voices.find(v => v.id === selectedVoice)?.tone} • {voices.find(v => v.id === selectedVoice)?.accent}
-              </p>
-            </div>
-            <button
-              onClick={() => handlePlaySample(selectedVoice)}
-              disabled={!voices.find(v => v.id === selectedVoice)?.sample_url}
-              className="p-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors duration-200"
-            >
-              <Play className="w-4 h-4" />
-            </button>
-          </div>
-        </motion.div>
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <h4 className="font-medium text-purple-900 mb-2">Selected Voice</h4>
+          {(() => {
+            const voice = voices.find(v => v.id === selectedVoice)
+            if (!voice) return null
+            
+            return (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center">
+                    <Volume2 className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-purple-900">{voice.name}</p>
+                    <p className="text-sm text-purple-700">{voice.gender} • {voice.accent}</p>
+                    <p className="text-xs text-purple-600">{voice.language} • {voice.tone}</p>
+                  </div>
+                </div>
+                
+                {/* Play Selected Voice */}
+                <button
+                  onClick={() => handlePlaySample(voice.id)}
+                  disabled={!voice.sample_url}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    voice.sample_url
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white hover:from-purple-600 hover:to-pink-700 shadow-md hover:shadow-lg transform hover:scale-105'
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  {playingVoice === voice.id ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      Playing...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-4 h-4 mr-2" />
+                      Play
+                    </>
+                  )}
+                </button>
+              </div>
+            )
+          })()}
+        </div>
       )}
     </div>
   )

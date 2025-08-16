@@ -38,7 +38,7 @@ import {
   FacebookLogo, 
   MultiPlatformLogo 
 } from '../../../../components/logos'
-import { useHeyGen } from '../../../../hooks/useHeyGen'
+import { useAIVideo } from '../../../../hooks/useAIVideo'
 import AvatarSelector from '../../../../components/dashboard/AvatarSelector'
 import VoiceSelector from '../../../../components/dashboard/VoiceSelector'
 import Link from 'next/link'
@@ -48,37 +48,37 @@ import { useRouter } from 'next/navigation'
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api'
 
 const campaignTypes = [
-  { value: 'ugc-video', label: 'UGC Video Campaign', icon: Video, description: 'Create authentic user-generated content videos', color: 'from-purple-500 to-pink-600' },
-  { value: 'ai-generated', label: 'AI-Generated Videos', icon: Sparkles, description: 'Use AI to create engaging video content', color: 'from-blue-500 to-purple-600' },
-  { value: 'user-submitted', label: 'User Submitted Content', icon: Users, description: 'Collect and curate videos from your community', color: 'from-green-500 to-emerald-600' },
-  { value: 'branded-content', label: 'Branded Content Series', icon: Target, description: 'Professional branded video campaigns', color: 'from-orange-500 to-red-600' }
+  { value: 'ugc-video', label: 'UGC Video Campaign', icon: Video, color: 'from-purple-500 to-pink-600' },
+  { value: 'ai-generated', label: 'AI-Generated Videos', icon: Sparkles, color: 'from-blue-500 to-purple-600' },
+  { value: 'user-submitted', label: 'User Submitted Content', icon: Users, color: 'from-green-500 to-emerald-600' },
+  { value: 'branded-content', label: 'Branded Content Series', icon: Target, color: 'from-orange-500 to-red-600' }
 ]
 
 const platformOptions = [
-  { value: 'tiktok', label: 'TikTok', icon: TikTokLogo, description: 'Short-form vertical videos', color: 'from-pink-500 to-purple-600' },
-  { value: 'instagram', label: 'Instagram', icon: InstagramLogo, description: 'Reels and IGTV content', color: 'from-purple-500 to-pink-600' },
-  { value: 'youtube', label: 'YouTube', icon: YouTubeLogo, description: 'Long-form video content', color: 'from-red-500 to-red-600' },
-  { value: 'facebook', label: 'Facebook', icon: FacebookLogo, description: 'Social media video posts', color: 'from-blue-500 to-blue-600' },
-  { value: 'multi-platform', label: 'Multi-Platform', icon: MultiPlatformLogo, description: 'Cross-platform distribution', color: 'from-gray-500 to-gray-600' }
+  { value: 'tiktok', label: 'TikTok', icon: TikTokLogo, color: 'from-pink-500 to-purple-600' },
+  { value: 'instagram', label: 'Instagram', icon: InstagramLogo, color: 'from-purple-500 to-pink-600' },
+  { value: 'youtube', label: 'YouTube', icon: YouTubeLogo, color: 'from-red-500 to-red-600' },
+  { value: 'facebook', label: 'Facebook', icon: FacebookLogo, color: 'from-blue-500 to-blue-600' },
+  { value: 'multi-platform', label: 'Multi-Platform', icon: MultiPlatformLogo, color: 'from-gray-500 to-gray-600' }
 ]
 
 const videoFormats = [
-  { value: 'vertical-9-16', label: 'Vertical (9:16)', description: 'Perfect for TikTok, Instagram Reels, YouTube Shorts', icon: '📱' },
-  { value: 'horizontal-16-9', label: 'Horizontal (16:9)', description: 'Standard for YouTube, Facebook, LinkedIn', icon: '🖥️' },
-  { value: 'square-1-1', label: 'Square (1:1)', description: 'Great for Instagram posts, Facebook feeds', icon: '⬜' },
-  { value: 'landscape-4-5', label: 'Landscape (4:5)', description: 'Instagram feed posts, Facebook stories', icon: '📐' }
+  { value: 'vertical-9-16', label: 'Vertical (9:16)', icon: '📱' },
+  { value: 'horizontal-16-9', label: 'Horizontal (16:9)', icon: '🖥️' },
+  { value: 'square-1-1', label: 'Square (1:1)', icon: '⬜' },
+  { value: 'landscape-4-5', label: 'Landscape (4:5)', icon: '📐' }
 ]
 
-// Avatar and voice options are now fetched from HeyGen API
+// Avatar and voice options are now fetched from AI Video API via useAIVideo hook
 
 export default function NewCampaignPage() {
   const router = useRouter()
-  const { avatars, voices, loading: heygenLoading, playVoiceSample, generateVideo: heygenGenerateVideo } = useHeyGen()
+  const { avatars, voices, loading: aiVideoLoading, playVoiceSample, generateVideo: aiVideoGenerateVideo } = useAIVideo()
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState({
     name: '',
     type: '',
-    description: '',
+
     platforms: [] as string[],
     videoFormat: '',
     targetAudience: '',
@@ -162,17 +162,16 @@ export default function NewCampaignPage() {
       return
     }
 
-    console.log('Generating video with HeyGen:', {
-      script: formData.script,
-      avatarId: formData.selectedAvatar,
-      voiceId: formData.selectedVoice,
-      generationSettings: formData.generationSettings
-    })
-
     setIsGeneratingVideo(true)
     try {
-      // Use HeyGen service to generate video
-      const result = await heygenGenerateVideo({
+      console.log('🎬 Starting video generation...')
+      console.log('📝 Script:', formData.script.substring(0, 100) + '...')
+      console.log('👤 Avatar ID:', formData.selectedAvatar)
+      console.log('🎤 Voice ID:', formData.selectedVoice)
+      console.log('⚙️ Settings:', formData.generationSettings)
+
+      // Use AI Video service to generate video
+      const result = await aiVideoGenerateVideo({
         script: formData.script,
         avatarId: formData.selectedAvatar,
         voiceId: formData.selectedVoice,
@@ -183,13 +182,15 @@ export default function NewCampaignPage() {
         }
       })
 
-      console.log('HeyGen video generation started:', result)
+      console.log('✅ AI Video generation started successfully:', result)
       setGeneratedVideo({ jobId: result.jobId, status: result.status })
-      alert('Video generation started successfully with HeyGen!')
+      
+      // Show success message with job ID
+      alert(`Video generation started successfully!\n\nJob ID: ${result.jobId}\nStatus: ${result.status}\n\nYou can now proceed to the next step.`)
       nextStep()
     } catch (error) {
-      console.error('Error generating video with HeyGen:', error)
-      alert('Failed to start video generation. Please try again.')
+      console.error('❌ Error generating video with AI Video service:', error)
+      alert(`Failed to start video generation: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsGeneratingVideo(false)
     }
@@ -218,7 +219,7 @@ export default function NewCampaignPage() {
           videoFormat: formData.videoFormat,
           targetAudience: formData.targetAudience,
           budget: parseFloat(formData.budget) || 0,
-          description: formData.description,
+  
           hashtags: formData.hashtags,
           callToAction: formData.callToAction,
           startDate: formData.startDate || null,
@@ -297,75 +298,63 @@ export default function NewCampaignPage() {
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
-        return (
-          <div className="space-y-6">
+  return (
+    <div className="space-y-6">
             <h3 className="text-xl font-semibold text-gray-900">Campaign Setup</h3>
             
-            {/* Campaign Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Campaign Name *
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g., Summer Collection UGC Challenge"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-              />
-            </div>
+          {/* Campaign Name */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Campaign Name *
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="e.g., Summer Collection UGC Challenge"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+            />
+          </div>
 
-            {/* Campaign Type Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Campaign Type *
-              </label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {campaignTypes.map((type) => (
-                  <label
-                    key={type.value}
-                    className={`relative flex items-start p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
-                      formData.type === type.value
-                        ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="type"
-                      value={type.value}
-                      checked={formData.type === type.value}
-                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                      className="sr-only"
-                    />
-                    <div className="flex items-start space-x-3">
-                      <div className={`w-12 h-12 bg-gradient-to-r ${type.color} rounded-lg flex items-center justify-center`}>
-                        <type.icon className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{type.label}</p>
-                        <p className="text-sm text-gray-600">{type.description}</p>
-                      </div>
+          {/* Campaign Type Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Campaign Type *
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {campaignTypes.map((type) => (
+                <label
+                  key={type.value}
+                  className={`relative flex items-start p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
+                    formData.type === type.value
+                      ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="type"
+                    value={type.value}
+                    checked={formData.type === type.value}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    className="sr-only"
+                  />
+                  <div className="flex items-start space-x-3">
+                    <div className={`w-12 h-12 bg-gradient-to-r ${type.color} rounded-lg flex items-center justify-center`}>
+                      <type.icon className="w-6 h-6 text-white" />
                     </div>
-                  </label>
-                ))}
-              </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{type.label}</p>
+                
+                    </div>
+                  </div>
+                </label>
+              ))}
             </div>
+          </div>
 
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Campaign Description
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Describe your campaign goals and objectives..."
-                rows={3}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-              />
-            </div>
+
           </div>
         )
 
@@ -375,10 +364,10 @@ export default function NewCampaignPage() {
             <h3 className="text-xl font-semibold text-gray-900">Product & Platform Selection</h3>
             
             {/* Product */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
                 Product/Service *
-              </label>
+            </label>
               <input
                 type="text"
                 required
@@ -400,36 +389,36 @@ export default function NewCampaignPage() {
                 value={formData.targetAudience}
                 onChange={(e) => setFormData({ ...formData, targetAudience: e.target.value })}
                 placeholder="e.g., Busy professionals aged 25-40, Fitness enthusiasts, Small business owners"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-              />
-            </div>
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+            />
+          </div>
 
-            {/* Platform Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Target Platforms *
-              </label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {platformOptions.map((platform) => (
-                  <button
-                    key={platform.value}
-                    type="button"
-                    onClick={() => handlePlatformToggle(platform.value)}
-                    className={`p-3 border-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      formData.platforms.includes(platform.value)
-                        ? 'border-purple-500 bg-purple-50 text-purple-700'
-                        : 'border-gray-200 text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                                      <div className="flex items-center space-x-2">
+          {/* Platform Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Target Platforms *
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {platformOptions.map((platform) => (
+                <button
+                  key={platform.value}
+                  type="button"
+                  onClick={() => handlePlatformToggle(platform.value)}
+                  className={`p-3 border-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    formData.platforms.includes(platform.value)
+                      ? 'border-purple-500 bg-purple-50 text-purple-700'
+                      : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
                     <platform.icon className="w-5 h-5" />
                     <span>{platform.label}</span>
                   </div>
-                    <p className="text-xs text-gray-500 mt-1">{platform.description}</p>
-                  </button>
-                ))}
-              </div>
+
+                </button>
+              ))}
             </div>
+          </div>
 
             {/* Video Format */}
             <div>
@@ -446,7 +435,7 @@ export default function NewCampaignPage() {
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <input
+              <input
                       type="radio"
                       name="videoFormat"
                       value={format.value}
@@ -458,12 +447,12 @@ export default function NewCampaignPage() {
                       <span className="text-2xl">{format.icon}</span>
                       <div>
                         <p className="font-medium text-gray-900">{format.label}</p>
-                        <p className="text-xs text-gray-500">{format.description}</p>
-                      </div>
-                    </div>
-                  </label>
+    
+            </div>
+          </div>
+              </label>
                 ))}
-              </div>
+            </div>
             </div>
           </div>
         )
@@ -477,7 +466,7 @@ export default function NewCampaignPage() {
               <div className="flex items-center space-x-3 mb-4">
                 <Lightbulb className="w-6 h-6 text-blue-600" />
                 <h4 className="text-lg font-medium text-blue-900">AI-Powered Script Creation</h4>
-              </div>
+            </div>
               <p className="text-blue-800 mb-4">
                 Our AI will analyze your product and target audience to create engaging, conversion-focused video scripts.
               </p>
@@ -516,8 +505,8 @@ export default function NewCampaignPage() {
               <div className="mt-2 flex items-center justify-between text-sm text-gray-500">
                 <span>{formData.script.length} characters</span>
                 <span>Estimated duration: {Math.ceil(formData.script.length / 150)}s</span>
-              </div>
             </div>
+          </div>
           </div>
         )
 
@@ -531,11 +520,11 @@ export default function NewCampaignPage() {
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 Select AI Avatar *
               </label>
-              <AvatarSelector
-                avatars={avatars}
-                selectedAvatar={formData.selectedAvatar}
-                onAvatarSelect={(avatarId) => setFormData({ ...formData, selectedAvatar: avatarId })}
-                loading={heygenLoading}
+                                <AvatarSelector
+                    avatars={avatars}
+                    selectedAvatar={formData.selectedAvatar}
+                    onAvatarSelect={(avatarId) => setFormData({ ...formData, selectedAvatar: avatarId })}
+                    loading={aiVideoLoading}
               />
             </div>
 
@@ -544,14 +533,14 @@ export default function NewCampaignPage() {
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 Select AI Voice *
               </label>
-              <VoiceSelector
-                voices={voices}
-                selectedVoice={formData.selectedVoice}
-                onVoiceSelect={(voiceId) => setFormData({ ...formData, selectedVoice: voiceId })}
-                onPlaySample={playVoiceSample}
-                loading={heygenLoading}
-              />
-            </div>
+                                <VoiceSelector
+                    voices={voices}
+                    selectedVoice={formData.selectedVoice}
+                    onVoiceSelect={(voiceId) => setFormData({ ...formData, selectedVoice: voiceId })}
+                    onPlaySample={playVoiceSample}
+                    loading={aiVideoLoading}
+                  />
+          </div>
 
             {/* Generation Settings */}
             <div>
@@ -577,8 +566,8 @@ export default function NewCampaignPage() {
                     <option value={60}>60s</option>
                     <option value={90}>90s</option>
                   </select>
-                </div>
-                <div>
+          </div>
+          <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Quality</label>
                   <select
                     value={formData.generationSettings.quality}
@@ -595,7 +584,7 @@ export default function NewCampaignPage() {
                     <option value="high">High</option>
                     <option value="premium">Premium</option>
                   </select>
-                </div>
+          </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Style</label>
                   <select
@@ -614,8 +603,8 @@ export default function NewCampaignPage() {
                     <option value="energetic">Energetic</option>
                     <option value="calm">Calm</option>
                   </select>
-                </div>
-              </div>
+          </div>
+        </div>
             </div>
           </div>
         )
@@ -629,17 +618,17 @@ export default function NewCampaignPage() {
               <div className="flex items-center space-x-3 mb-4">
                 <Video className="w-6 h-6 text-green-600" />
                 <h4 className="text-lg font-medium text-green-900">Ready to Generate Your Video</h4>
-              </div>
-              
+                  </div>
+
               <div className="space-y-3 mb-6">
                 <div className="flex items-center space-x-2">
                   <CheckCircle className="w-4 h-4 text-green-600" />
                   <span className="text-sm text-green-800">Script: {formData.script ? '✅ Ready' : '❌ Missing'}</span>
-                </div>
+                    </div>
                 <div className="flex items-center space-x-2">
                   <CheckCircle className="w-4 h-4 text-green-600" />
                   <span className="text-sm text-green-800">Avatar: {formData.selectedAvatar ? '✅ Selected' : '❌ Missing'}</span>
-                </div>
+                  </div>
                 <div className="flex items-center space-x-2">
                   <CheckCircle className="w-4 h-4 text-green-600" />
                   <span className="text-sm text-green-800">Voice: {formData.selectedVoice ? '✅ Selected' : '❌ Missing'}</span>
@@ -648,8 +637,8 @@ export default function NewCampaignPage() {
                   <CheckCircle className="w-4 h-4 text-green-600" />
                   <span className="text-sm text-green-800">Settings: ✅ Configured</span>
                 </div>
-              </div>
-              
+                  </div>
+
               <button
                 onClick={generateVideo}
                 disabled={isGeneratingVideo || !formData.script || !formData.selectedAvatar || !formData.selectedVoice}
@@ -667,7 +656,7 @@ export default function NewCampaignPage() {
                   </>
                 )}
               </button>
-            </div>
+                          </div>
 
             <div className="bg-gray-50 p-4 rounded-lg">
               <h5 className="font-medium text-gray-900 mb-2">What happens next?</h5>
@@ -677,8 +666,8 @@ export default function NewCampaignPage() {
                 <li>• Video will be optimized for your selected platforms</li>
                 <li>• You'll receive a preview for review and editing</li>
               </ul>
-            </div>
-          </div>
+                        </div>
+                        </div>
         )
 
       case 6:
@@ -690,15 +679,15 @@ export default function NewCampaignPage() {
               <div className="text-center">
                 <div className="w-32 h-32 bg-gray-200 rounded-lg mx-auto mb-4 flex items-center justify-center">
                   <Video className="w-16 h-16 text-gray-400" />
-                </div>
+                      </div>
                 <h4 className="text-lg font-medium text-gray-900 mb-2">Video Generation in Progress</h4>
                 <p className="text-gray-600 mb-4">Your video is being created. This may take a few minutes.</p>
                 <div className="flex items-center justify-center space-x-2">
                   <Loader2 className="w-5 h-5 animate-spin text-purple-600" />
                   <span className="text-sm text-gray-500">Processing...</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
               <h5 className="font-medium text-blue-900 mb-2">Next Steps</h5>
@@ -708,8 +697,8 @@ export default function NewCampaignPage() {
                 <li>• Optimize for different platforms</li>
                 <li>• Schedule or publish your content</li>
               </ul>
-            </div>
-          </div>
+                    </div>
+                  </div>
         )
 
       case 7:
@@ -735,10 +724,10 @@ export default function NewCampaignPage() {
                   <button className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200">
                     <Calendar className="w-4 h-4 mr-2" />
                     Schedule
-                  </button>
-                </div>
-              </div>
-            </div>
+                    </button>
+                  </div>
+                        </div>
+                      </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-gray-50 p-4 rounded-lg">
@@ -748,29 +737,29 @@ export default function NewCampaignPage() {
                     <div key={platform} className="flex items-center space-x-2">
                       <CheckCircle className="w-4 h-4 text-green-600" />
                       <span className="text-sm text-gray-700">{platform}</span>
-                    </div>
+                        </div>
                   ))}
-                </div>
-              </div>
-              
+                    </div>
+                  </div>
+
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h5 className="font-medium text-gray-900 mb-2">Analytics Tracking</h5>
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <BarChart3 className="w-4 h-4 text-blue-600" />
                     <span className="text-sm text-gray-700">View counts</span>
-                  </div>
+                        </div>
                   <div className="flex items-center space-x-2">
                     <Users className="w-4 h-4 text-green-600" />
                     <span className="text-sm text-gray-700">Engagement rates</span>
-                  </div>
+                        </div>
                   <div className="flex items-center space-x-2">
                     <Target className="w-4 h-4 text-purple-600" />
                     <span className="text-sm text-gray-700">Conversion tracking</span>
+                      </div>
                   </div>
                 </div>
               </div>
-            </div>
           </div>
         )
 
@@ -794,24 +783,24 @@ export default function NewCampaignPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Create New UGC Campaign</h1>
             <p className="text-gray-600 mt-1">Complete video generation workflow: Campaign → Script → Video → Publish</p>
-          </div>
-        </div>
-      </div>
-
+                        </div>
+                      </div>
+                  </div>
+                  
       {/* Progress Bar */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-gray-700">Step {currentStep} of {totalSteps}</span>
             <span className="text-sm text-gray-500">{Math.round((currentStep / totalSteps) * 100)}% Complete</span>
-          </div>
+                  </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
               className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300"
               style={{ width: `${(currentStep / totalSteps) * 100}%` }}
             ></div>
-          </div>
-        </div>
+                          </div>
+                        </div>
 
         <div className="flex items-center justify-between text-xs text-gray-500">
           <span>Campaign Setup</span>
@@ -821,28 +810,28 @@ export default function NewCampaignPage() {
           <span>Generate Video</span>
           <span>Preview & Edit</span>
           <span>Publish</span>
-        </div>
-      </div>
-
+                      </div>
+                  </div>
+                  
       {/* Step Requirements */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <div className="flex items-center space-x-2 mb-2">
           <CheckCircle className="w-5 h-5 text-blue-600" />
           <h4 className="font-medium text-blue-900">Step {currentStep} Requirements</h4>
-        </div>
+                  </div>
         <div className="flex flex-wrap gap-2">
           {getStepRequirements().map((requirement, index) => (
             <span key={index} className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
               {requirement}
             </span>
           ))}
-        </div>
+                </div>
         <div className="mt-2 text-xs text-blue-700">
           <strong>Debug:</strong> Can proceed: {canProceedToNextStep() ? 'Yes' : 'No'} | 
           Current step: {currentStep} | 
           Total steps: {totalSteps}
-        </div>
-      </div>
+              </div>
+            </div>
 
       {/* Step Content */}
       <motion.div
@@ -863,11 +852,11 @@ export default function NewCampaignPage() {
           className="inline-flex items-center px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
         >
           Previous
-        </button>
+                  </button>
 
         <div className="flex items-center space-x-3">
           {currentStep === totalSteps ? (
-            <button
+                    <button
               onClick={handleSubmit}
               disabled={isLoading}
               className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
@@ -883,7 +872,7 @@ export default function NewCampaignPage() {
                   Create Campaign & Publish Video
                 </>
               )}
-            </button>
+                    </button>
           ) : (
             <button
               onClick={nextStep}
@@ -893,8 +882,8 @@ export default function NewCampaignPage() {
               Next Step
             </button>
           )}
-        </div>
-      </div>
+                  </div>
+                </div>
     </div>
   )
 }

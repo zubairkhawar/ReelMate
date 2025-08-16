@@ -7,6 +7,7 @@ import Link from 'next/link'
 
 const plans = [
   {
+    id: 'starter',
     name: 'Starter',
     description: 'Perfect for small brands getting started',
     monthlyPrice: 49,
@@ -19,9 +20,11 @@ const plans = [
       { text: 'Email support', icon: Headphones }
     ],
     popular: false,
-    color: 'from-gray-500 to-gray-600'
+    color: 'from-gray-500 to-gray-600',
+    selectedColor: 'from-gray-600 to-gray-700'
   },
   {
+    id: 'pro',
     name: 'Pro',
     description: 'For growing brands scaling their advertising',
     monthlyPrice: 149,
@@ -36,9 +39,11 @@ const plans = [
       { text: 'Multi-platform publishing', icon: Globe }
     ],
     popular: true,
-    color: 'from-blue-500 to-purple-600'
+    color: 'from-blue-500 to-purple-600',
+    selectedColor: 'from-blue-600 to-purple-700'
   },
   {
+    id: 'agency',
     name: 'Agency',
     description: 'For agencies managing multiple brands',
     monthlyPrice: 399,
@@ -54,15 +59,21 @@ const plans = [
       { text: 'Custom integrations', icon: Settings }
     ],
     popular: false,
-    color: 'from-purple-500 to-pink-600'
+    color: 'from-purple-500 to-pink-600',
+    selectedColor: 'from-purple-600 to-pink-700'
   }
 ]
 
 export default function Pricing() {
   const [isYearly, setIsYearly] = useState(false)
+  const [selectedPlan, setSelectedPlan] = useState('pro') // Default to Pro plan
+
+  const handlePlanSelect = (planId: string) => {
+    setSelectedPlan(planId)
+  }
 
   return (
-    <section className="py-16 lg:py-20 bg-white">
+    <section className="py-16 lg:py-20 bg-gradient-to-br from-gray-50 to-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -119,7 +130,7 @@ export default function Pricing() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
           {plans.map((plan, index) => (
             <motion.div
-              key={plan.name}
+              key={plan.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.3 + index * 0.1 }}
@@ -135,11 +146,23 @@ export default function Pricing() {
                 </div>
               )}
               
-              <div className={`bg-white rounded-3xl shadow-xl border-2 ${
-                plan.popular 
-                  ? 'border-blue-200 bg-gradient-to-br from-blue-50/50 to-purple-50/50 scale-105 lg:scale-110 ring-4 ring-blue-100/50' 
-                  : 'border-gray-100'
-              } p-6 lg:p-8 h-full transition-all duration-300 hover:shadow-2xl`}>
+              <div 
+                onClick={() => handlePlanSelect(plan.id)}
+                className={`bg-white rounded-3xl shadow-xl border-2 cursor-pointer transition-all duration-300 ${
+                  selectedPlan === plan.id
+                    ? `border-blue-300 bg-gradient-to-br from-blue-50/50 to-purple-50/50 scale-105 lg:scale-110 ring-4 ring-blue-200/50 shadow-2xl`
+                    : plan.popular
+                    ? 'border-blue-200 bg-gradient-to-br from-blue-50/50 to-purple-50/50 scale-105 lg:scale-110 ring-4 ring-blue-100/50 hover:scale-105 hover:shadow-2xl'
+                    : 'border-gray-200 hover:border-gray-300 hover:scale-105 hover:shadow-2xl'
+                } p-6 lg:p-8 h-full`}
+              >
+                {/* Selection Indicator */}
+                {selectedPlan === plan.id && (
+                  <div className="absolute top-4 right-4 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                    <Check className="w-4 h-4 text-white" />
+                  </div>
+                )}
+
                 <div className="text-center mb-8">
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">
                     {plan.name}
@@ -153,18 +176,32 @@ export default function Pricing() {
                       ${isYearly ? plan.yearlyPrice : plan.monthlyPrice}
                     </span>
                     <span className="text-gray-600">/month</span>
+                    {isYearly && (
+                      <div className="text-sm text-green-600 font-medium mt-1">
+                        Billed annually
+                      </div>
+                    )}
                   </div>
                   
-                  <Link href="/auth/signup" className={`w-full py-3 px-6 rounded-full font-semibold text-white bg-gradient-to-r ${plan.color} hover:shadow-lg transform hover:scale-105 transition-all duration-200 inline-flex items-center justify-center`}>
-                    Start Free Trial
+                  <Link 
+                    href="/auth/signup" 
+                    className={`w-full py-3 px-6 rounded-full font-semibold text-white bg-gradient-to-r ${
+                      selectedPlan === plan.id ? plan.selectedColor : plan.color
+                    } hover:shadow-lg transform hover:scale-105 transition-all duration-200 inline-flex items-center justify-center`}
+                  >
+                    {selectedPlan === plan.id ? 'Selected Plan' : 'Start Free Trial'}
                   </Link>
                 </div>
                 
                 <div className="space-y-4">
                   {plan.features.map((feature, featureIndex) => (
                     <div key={featureIndex} className="flex items-start">
-                      <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
-                        <feature.icon className="w-3 h-3 text-blue-600" />
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 ${
+                        selectedPlan === plan.id ? 'bg-blue-100' : 'bg-gray-100'
+                      }`}>
+                        <feature.icon className={`w-3 h-3 ${
+                          selectedPlan === plan.id ? 'text-blue-600' : 'text-gray-600'
+                        }`} />
                       </div>
                       <span className="text-gray-700 text-sm">{feature.text}</span>
                     </div>
@@ -174,6 +211,29 @@ export default function Pricing() {
             </motion.div>
           ))}
         </div>
+
+        {/* Selected Plan Summary */}
+        {selectedPlan && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mt-12 text-center"
+          >
+            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 max-w-md mx-auto">
+              <h4 className="text-lg font-semibold text-blue-900 mb-2">
+                Selected Plan: {plans.find(p => p.id === selectedPlan)?.name}
+              </h4>
+              <p className="text-blue-700 text-sm">
+                ${isYearly 
+                  ? plans.find(p => p.id === selectedPlan)?.yearlyPrice 
+                  : plans.find(p => p.id === selectedPlan)?.monthlyPrice
+                }/month
+                {isYearly && ' (billed annually)'}
+              </p>
+            </div>
+          </motion.div>
+        )}
 
         {/* FAQ Section */}
         <motion.div
