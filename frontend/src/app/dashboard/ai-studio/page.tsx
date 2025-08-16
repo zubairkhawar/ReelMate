@@ -212,20 +212,30 @@ Would you like me to elaborate on any of these aspects or help you with somethin
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 relative overflow-hidden">
+      {/* Background Decorative Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-200/20 to-purple-200/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-indigo-200/20 to-blue-200/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-100/10 to-indigo-100/10 rounded-full blur-3xl"></div>
+      </div>
+
       {/* Fixed Header - No Scroll */}
-      <div className="flex-shrink-0 bg-white border-b border-gray-200 px-6 py-4">
+      <div className="flex-shrink-0 bg-white/80 backdrop-blur-sm border-b border-gray-200/50 px-6 py-4 shadow-sm relative z-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Sparkles className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-xl font-semibold text-gray-900">AI Studio</h1>
+            <div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">AI Studio</h1>
+              <p className="text-sm text-gray-600">Your creative AI companion</p>
+            </div>
             <button
               onClick={() => setShowSessions(!showSessions)}
-              className="flex items-center space-x-2 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+              className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all duration-200 border border-gray-200 hover:border-gray-300"
             >
-              <span>{currentSession.title}</span>
+              <span className="font-medium">{currentSession.title}</span>
               {showSessions ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
             </button>
           </div>
@@ -237,9 +247,6 @@ Would you like me to elaborate on any of these aspects or help you with somethin
             <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200" title="Save Chat">
               <Save className="w-5 h-5" />
             </button>
-            <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200" title="Settings">
-              <Settings className="w-5 h-5" />
-            </button>
             <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200" title="Help">
               <HelpCircle className="w-5 h-5" />
             </button>
@@ -248,7 +255,12 @@ Would you like me to elaborate on any of these aspects or help you with somethin
 
         {/* Sessions Dropdown */}
         {showSessions && (
-          <div className="mt-3 pt-3 border-t border-gray-200">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mt-3 pt-3 border-t border-gray-200/50"
+          >
             <div className="space-y-2">
               {mockChatSessions.map((session) => (
                 <button
@@ -257,51 +269,96 @@ Would you like me to elaborate on any of these aspects or help you with somethin
                     setCurrentSession(session)
                     setShowSessions(false)
                   }}
-                  className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 ${
+                  className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${
                     currentSession.id === session.id
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'hover:bg-gray-100 text-gray-700'
+                      ? 'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-200 shadow-sm'
+                      : 'hover:bg-white/60 text-gray-700 hover:shadow-sm'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-medium">{session.title}</span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
                       {session.createdAt.toLocaleDateString()}
                     </span>
                   </div>
                 </button>
               ))}
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
 
       {/* Chat Body - Scrollable Container */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
-        {currentSession.messages.map((message) => (
-          <div
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6 relative z-0">
+        {/* Welcome Message when no messages */}
+        {currentSession.messages.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center justify-center h-full text-center space-y-6"
+          >
+            <div className="w-24 h-24 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-600 rounded-full flex items-center justify-center shadow-2xl">
+              <Sparkles className="w-12 h-12 text-white" />
+            </div>
+            <div className="max-w-md space-y-3">
+              <h2 className="text-2xl font-bold text-gray-900">Welcome to AI Studio!</h2>
+              <p className="text-gray-600 leading-relaxed">
+                Your creative AI companion is ready to help you with UGC video creation, content strategy, and creative brainstorming.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl">
+              <div className="p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-sm">
+                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Video className="w-4 h-4 text-blue-600" />
+                </div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">Script Generation</h3>
+                <p className="text-xs text-gray-600">Create compelling video scripts</p>
+              </div>
+              <div className="p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-sm">
+                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Users className="w-4 h-4 text-purple-600" />
+                </div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">UGC Strategy</h3>
+                <p className="text-xs text-gray-600">Optimize for user engagement</p>
+              </div>
+              <div className="p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-sm">
+                <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Zap className="w-4 h-4 text-indigo-600" />
+                </div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">Content Ideas</h3>
+                <p className="text-xs text-gray-600">Get creative inspiration</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {currentSession.messages.map((message, index) => (
+          <motion.div
             key={message.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div className={`flex items-start space-x-3 max-w-3xl ${message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
               {/* Avatar */}
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg ${
                 message.role === 'user' 
-                  ? 'bg-blue-500' 
-                  : 'bg-gradient-to-r from-blue-500 to-purple-500'
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-600' 
+                  : 'bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-600'
               }`}>
                 {message.role === 'user' ? (
-                  <User className="w-4 h-4 text-white" />
+                  <User className="w-5 h-5 text-white" />
                 ) : (
-                  <Bot className="w-4 h-4 text-white" />
+                  <Bot className="w-5 h-5 text-white" />
                 )}
               </div>
 
               {/* Message Bubble */}
-              <div className={`rounded-2xl px-4 py-3 ${
+              <div className={`rounded-2xl px-5 py-4 shadow-lg ${
                 message.role === 'user'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-white border border-gray-200 text-gray-900'
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                  : 'bg-white/90 backdrop-blur-sm border border-gray-200/50 text-gray-900'
               }`}>
                 <div 
                   className={`prose prose-sm max-w-none ${
@@ -311,17 +368,17 @@ Would you like me to elaborate on any of these aspects or help you with somethin
                 />
                 
                 {/* Message Actions */}
-                <div className={`flex items-center justify-between mt-3 pt-2 ${
-                  message.role === 'user' ? 'border-blue-400' : 'border-gray-200'
+                <div className={`flex items-center justify-between mt-4 pt-3 ${
+                  message.role === 'user' ? 'border-blue-400/30' : 'border-gray-200/50'
                 } border-t`}>
                   <span className="text-xs opacity-70">
                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                   
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center space-x-2">
                     <button
                       onClick={() => copyMessage(message.content)}
-                      className="p-1 rounded hover:bg-black/10 transition-colors duration-200"
+                      className="p-2 rounded-lg hover:bg-black/10 transition-all duration-200 hover:scale-105"
                       title="Copy message"
                     >
                       <Copy className="w-3 h-3" />
@@ -331,10 +388,10 @@ Would you like me to elaborate on any of these aspects or help you with somethin
                       <>
                         <button
                           onClick={() => handleFeedback(message.id, 'positive')}
-                          className={`p-1 rounded transition-colors duration-200 ${
+                          className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${
                             message.feedback === 'positive' 
-                              ? 'text-green-500' 
-                              : 'hover:bg-black/10'
+                              ? 'text-green-500 bg-green-50' 
+                              : 'hover:bg-gray-100'
                           }`}
                           title="Thumbs up"
                         >
@@ -343,10 +400,10 @@ Would you like me to elaborate on any of these aspects or help you with somethin
                         
                         <button
                           onClick={() => handleFeedback(message.id, 'negative')}
-                          className={`p-1 rounded transition-colors duration-200 ${
+                          className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${
                             message.feedback === 'negative' 
-                              ? 'text-red-500' 
-                              : 'hover:bg-black/10'
+                              ? 'text-red-500 bg-red-50' 
+                              : 'hover:bg-gray-100'
                             }`}
                           title="Thumbs down"
                         >
@@ -358,46 +415,50 @@ Would you like me to elaborate on any of these aspects or help you with somethin
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
 
         {/* Loading Indicator */}
         {isLoading && (
-          <div className="flex justify-start">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex justify-start"
+          >
             <div className="flex items-start space-x-3 max-w-3xl">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                <Bot className="w-4 h-4 text-white" />
+              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                <Bot className="w-5 h-5 text-white" />
               </div>
-              <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3">
-                <div className="flex items-center space-x-2">
+              <div className="bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl px-5 py-4 shadow-lg">
+                <div className="flex items-center space-x-3">
                   <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   </div>
-                  <span className="text-sm text-gray-500">AI is thinking...</span>
+                  <span className="text-sm text-gray-600 font-medium">AI is thinking...</span>
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         <div ref={messagesEndRef} />
       </div>
 
       {/* Fixed Input Bar - No Scroll */}
-      <div className="flex-shrink-0 bg-white border-t border-gray-200 px-6 py-4">
+      <div className="flex-shrink-0 bg-white/80 backdrop-blur-sm border-t border-gray-200/50 px-6 py-4 shadow-lg relative z-10">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-end space-x-3">
             {/* Left: Upload/Context */}
             <div className="flex items-center space-x-2">
-              <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200" title="Upload file">
+              <button className="p-2.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 hover:scale-105 border border-gray-200 hover:border-blue-200" title="Upload file">
                 <Paperclip className="w-5 h-5" />
               </button>
-              <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200" title="Add image">
+              <button className="p-2.5 text-gray-500 hover:text-purple-600 hover:bg-purple-50 rounded-xl transition-all duration-200 hover:scale-105 border border-gray-200 hover:border-purple-200" title="Add image">
                 <ImageIcon className="w-5 h-5" />
               </button>
-              <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200" title="Add context">
+              <button className="p-2.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all duration-200 hover:scale-105 border border-gray-200 hover:border-indigo-200" title="Add context">
                 <FileText className="w-5 h-5" />
               </button>
             </div>
@@ -410,9 +471,9 @@ Would you like me to elaborate on any of these aspects or help you with somethin
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Ask me anything about UGC video creation, AI content generation, or creative strategy..."
-                className="w-full resize-none border border-gray-300 rounded-xl px-4 py-3 pr-12 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className="w-full resize-none border border-gray-300 rounded-2xl px-5 py-4 pr-16 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md focus:shadow-lg bg-white/90 backdrop-blur-sm"
                 rows={1}
-                style={{ minHeight: '48px', maxHeight: '120px' }}
+                style={{ minHeight: '56px', maxHeight: '120px' }}
                 onInput={(e) => {
                   const target = e.target as HTMLTextAreaElement
                   target.style.height = 'auto'
@@ -423,13 +484,13 @@ Would you like me to elaborate on any of these aspects or help you with somethin
 
             {/* Right: Send & Voice */}
             <div className="flex items-center space-x-2">
-              <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200" title="Voice input">
+              <button className="p-2.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all duration-200 hover:scale-105 border border-gray-200 hover:border-indigo-200" title="Voice input">
                 <Mic className="w-5 h-5" />
               </button>
               <button
                 onClick={handleSendMessage}
                 disabled={!inputValue.trim() || isLoading}
-                className="p-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-200"
+                className="p-3.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl disabled:shadow-none"
                 title="Send message"
               >
                 <Send className="w-5 h-5" />
@@ -438,17 +499,17 @@ Would you like me to elaborate on any of these aspects or help you with somethin
           </div>
 
           {/* Quick Actions */}
-          <div className="mt-3 flex items-center justify-center space-x-4">
-            <button className="flex items-center space-x-2 px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-              <Lightbulb className="w-3 h-3" />
+          <div className="mt-4 flex items-center justify-center space-x-4">
+            <button className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-600 hover:text-blue-700 hover:bg-blue-50 rounded-xl transition-all duration-200 border border-gray-200 hover:border-blue-200 hover:shadow-sm">
+              <Lightbulb className="w-4 h-4" />
               <span>UGC Script Ideas</span>
             </button>
-            <button className="flex items-center space-x-2 px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-              <Zap className="w-3 h-3" />
+            <button className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-600 hover:text-purple-700 hover:bg-purple-50 rounded-xl transition-all duration-200 border border-gray-200 hover:border-purple-200 hover:shadow-sm">
+              <Zap className="w-4 h-4" />
               <span>Video Optimization</span>
             </button>
-            <button className="flex items-center space-x-2 px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-              <BookOpen className="w-3 h-3" />
+            <button className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-xl transition-all duration-200 border border-gray-200 hover:border-indigo-200 hover:shadow-sm">
+              <BookOpen className="w-4 h-4" />
               <span>Content Strategy</span>
             </button>
           </div>
